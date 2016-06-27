@@ -1,0 +1,12 @@
+services:
+
+    app_gear.core.model.manager:
+        class: AppGear\CoreBundle\Model\ModelManager
+        arguments:
+          - %app_gear.core.model.manager.models%
+
+    app_gear.core.model.source_generator:
+        class: AppGear\CoreBundle\Model\SourceGenerator
+        arguments:
+          - @app_gear.core.model.manager
+          - %kernel.bundles%

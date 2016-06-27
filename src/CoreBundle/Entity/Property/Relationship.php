@@ -1,0 +1,30 @@
+<?php
+
+namespace AppGear\CoreBundle\Entity\Property;
+
+use AppGear\CoreBundle\Entity\Property;
+class Relationship extends Property
+{
+    
+    /**
+     * Target
+     */
+    protected $target;
+    
+    /**
+     * Get target
+     */
+    public function getTarget()
+    {
+        return $this->target;
+    }
+    
+    /**
+     * Set target
+     */
+    public function setTarget($target)
+    {
+        $this->target = $target;
+        return $this;
+    }
+}

@@ -1,0 +1,75 @@
+models:
+
+  model:
+    properties:
+      name:
+        field:
+          type: string
+      parent:
+        relationship:
+          type:     toOne
+          target:   model
+      properties:
+        relationship:
+          type:     toMany
+          target:   property
+      toString:
+        field:
+          type: string
+
+  property:
+    properties:
+      name:
+        field:
+          type: string
+      extensions:
+        relationship:
+          type: toMany
+          target: extension.property
+  property.field:
+    parent: property
+  property.field.boolean:
+    parent: property.field
+  property.field.datetime:
+    parent: property.field
+  property.field.file:
+    parent: property.field
+  property.field.float:
+    parent: property.field
+  property.field.integer:
+    parent: property.field
+  property.field.string:
+    parent: property.field
+
+  property.relationship:
+    parent: property
+    properties:
+      target:
+        relationship:
+          type:     toOne
+          target:   model
+  property.relationship.toMany:
+    parent: property.relationship
+  property.relationship.toOne:
+    parent: property.relationship
+
+  property.classType:
+    parent: property
+    properties:
+      className:
+        field:
+          type: string
+  property.collection:
+    parent: property
+    properties:
+      className:
+        field:
+          type: string
+
+  extension.property: []
+  extension.property.computed:
+    parent: extension.property
+    properties:
+      implementation:
+        field:
+          type: string
