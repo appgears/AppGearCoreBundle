@@ -4,6 +4,8 @@ services:
         class: AppGear\CoreBundle\Model\ModelManager
         arguments:
           - %app_gear.core.model.manager.models%
+          - @ag.service.tagged_manager
+          - @service_container
 
     app_gear.core.model.source_generator:
         class: AppGear\CoreBundle\Model\SourceGenerator

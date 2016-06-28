@@ -2,10 +2,13 @@
 
 namespace AppGear\CoreBundle\Model;
 
+use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
+use AppGear\PlatformBundle\Service\TaggedManager;
 use Cosmologist\Gears\Str\CamelSnakeCase;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ModelManager
 {
@@ -33,11 +36,27 @@ class ModelManager
     private $models = [];
 
     /**
+     * Tagged service manager
+     *
+     * @var TaggedManager
+     */
+    private $taggedManager;
+
+    /**
+     * Service container
+     *
+     * @var ContainerInterface
+     */
+    private $container;
+
+    /**
      * ModelManager constructor.
      *
-     * @param array $definitions Models definitions
+     * @param array              $definitions   Models definitions
+     * @param TaggedManager      $taggedManager Tagged service manager
+     * @param ContainerInterface $container     Service container
      */
-    public function __construct(array $definitions)
+    public function __construct(array $definitions, TaggedManager $taggedManager, ContainerInterface $container)
     {
         foreach ($definitions as $moduleName => $moduleDefinitions) {
             foreach ($moduleDefinitions as $name => $definition) {
@@ -46,6 +65,8 @@ class ModelManager
                 $this->modelModuleMap[$fullModelName] = $moduleName;
             }
         }
+        $this->taggedManager = $taggedManager;
+        $this->container     = $container;
     }
 
     /**
@@ -206,8 +227,49 @@ class ModelManager
     public function instance($name)
     {
         $className = $this->fullClassName($name);
+        $instance  = new $className;
+        $this->injectServices($name, $instance);
 
         return new $className;
+    }
+
+    /**
+     * Inject services for computed fields
+     *
+     * @param string $name     The model name
+     * @param object $instance Instance
+     *
+     * @return object
+     */
+    public function injectServices($name, $instance)
+    {
+        $model = $this->get($name);
+        foreach ($model->getProperties() as $property) {
+            /** @var Property $property $extension */
+            foreach ($property->getExtensions() as $extension) {
+                if ($extension instanceof Computed) {
+                    $extensionModel = $this->getByInstance($extension);
+                    $services       = $this->taggedManager->findServices(
+                        'extension.property.computed',
+                        ['model' => $extensionModel->getName()]
+                    );
+                    if (count($services) !== 1) {
+                        throw new \RuntimeException(
+                            sprintf('Found more than 1 or not found services for computed extension with name: %s',
+                                $extensionModel->getName())
+                        );
+                    }
+
+                    $service       = array_pop($services);
+                    $serviceSetter = 'set' . ucfirst($property->getName()) . 'Service';
+                    $instance->$serviceSetter($this->container->get($service));
+
+                    break;
+                }
+            }
+        }
+
+        return $instance;
     }
 
     /**
@@ -291,13 +353,14 @@ class ModelManager
         $children = [];
         foreach ($this->definitions as $definitionName => $definition) {
             if (array_key_exists('parent', $definition)) {
-                $parentName = $definition['parent'];
+                $parentName     = $definition['parent'];
                 $parentFullName = $this->fullName($parentName, $this->modelModuleMap[$name] . '.entity.');
                 if ($parentFullName === $name) {
                     $children[] = $this->get($definitionName);
                 }
             }
         }
+
         return $children;
     }
 
