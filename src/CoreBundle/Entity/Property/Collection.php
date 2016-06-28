@@ -3,7 +3,7 @@
 namespace AppGear\CoreBundle\Entity\Property;
 
 use AppGear\CoreBundle\Entity\Property;
-class ClassType extends Property
+class Collection extends Property
 {
     
     /**

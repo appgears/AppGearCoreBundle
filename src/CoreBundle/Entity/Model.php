@@ -26,14 +26,6 @@ class Model
     protected $toString;
     
     /**
-     * Get name
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    
-    /**
      * Set name
      */
     public function setName($name)
@@ -43,11 +35,11 @@ class Model
     }
     
     /**
-     * Get parent
+     * Get name
      */
-    public function getParent()
+    public function getName()
     {
-        return $this->parent;
+        return $this->name;
     }
     
     /**
@@ -60,11 +52,11 @@ class Model
     }
     
     /**
-     * Get properties
+     * Get parent
      */
-    public function getProperties()
+    public function getParent()
     {
-        return $this->properties;
+        return $this->parent;
     }
     
     /**
@@ -77,11 +69,11 @@ class Model
     }
     
     /**
-     * Get toString
+     * Get properties
      */
-    public function getToString()
+    public function getProperties()
     {
-        return $this->toString;
+        return $this->properties;
     }
     
     /**
@@ -91,5 +83,13 @@ class Model
     {
         $this->toString = $toString;
         return $this;
+    }
+    
+    /**
+     * Get toString
+     */
+    public function getToString()
+    {
+        return $this->toString;
     }
 }

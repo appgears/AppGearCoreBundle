@@ -69,7 +69,3 @@ models:
   extension.property: []
   extension.property.computed:
     parent: extension.property
-    properties:
-      implementation:
-        field:
-          type: string

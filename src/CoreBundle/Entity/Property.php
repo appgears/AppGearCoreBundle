@@ -16,14 +16,6 @@ class Property
     protected $extensions = array();
     
     /**
-     * Get name
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-    
-    /**
      * Set name
      */
     public function setName($name)
@@ -33,11 +25,11 @@ class Property
     }
     
     /**
-     * Get extensions
+     * Get name
      */
-    public function getExtensions()
+    public function getName()
     {
-        return $this->extensions;
+        return $this->name;
     }
     
     /**
@@ -47,5 +39,13 @@ class Property
     {
         $this->extensions = $extensions;
         return $this;
+    }
+    
+    /**
+     * Get extensions
+     */
+    public function getExtensions()
+    {
+        return $this->extensions;
     }
 }

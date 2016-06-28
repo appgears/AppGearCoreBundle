@@ -178,11 +178,31 @@ class SourceGenerator
         // Добавляем свойство к классу
         $classNode->addStmt($node);
 
-        // Геттер
-        $this->addGetter($property, $classNode);
-
         // Сеттер
         $this->addSetter($property, $classNode);
+
+        // Является ли свойство рассчитываемым
+        $computedExtension = null;
+//        foreach ($property->getExtensions() as $extension) {
+//            if ($extension instanceof Computed) {
+//                $computedExtension = $extension;
+//                break;
+//            }
+//        }
+
+        if ($computedExtension !== null) {
+            // Создаем свойства, сеттер и геттер для сервиса обеспечивающего расчет
+            $name    = $property->getName() . 'Service';
+            $builder = $this->factory->property($name)->makeProtected();
+            $node    = $builder->getNode();
+            $this->addDocComment($node, ucfirst($name), 1);
+            $classNode->addStmt($node);
+            $this->addGetter($property, $classNode);
+            $this->addSetter($property, $classNode);
+        }
+
+        // Геттер
+        $this->addGetter($property, $classNode, $computedExtension);
     }
 
     /**
@@ -216,29 +236,6 @@ class SourceGenerator
      *
      * @param Property $property  Свойство
      * @param Node     $classNode Узел класса
-     *
-     * @return Node
-     */
-    private function addGetter($property, $classNode)
-    {
-        $name = $property->getName();
-
-        $node = $this->factory->method('get' . ucfirst($name))->makePublic();
-        $node->addStmts($this->parser->parse('<?php return $this->' . $name . ';'));
-
-        $node = $node->getNode();
-        $this->addDocComment($node, 'Get ' . $name, 1);
-
-        $classNode->addStmt($node);
-
-        return $classNode;
-    }
-
-    /**
-     * Добавляет cеттер к классу для свойства
-     *
-     * @param Property $property  Свойство
-     * @param Node     $classNode Узел класса
      */
     private function addSetter($property, $classNode)
     {
@@ -256,6 +253,40 @@ class SourceGenerator
         $this->addDocComment($node, 'Set ' . $name, 1);
 
         $classNode->addStmt($node);
+    }
+
+    /**
+     * Добавляет cеттер к классу для свойства
+     *
+     * @param Property $property  Свойство
+     * @param Node     $classNode Узел класса
+     * @param null     $extension Computed extension
+     *
+     * @return Node
+     */
+    private function addGetter($property, $classNode, $extension = null)
+    {
+        $name = $property->getName();
+        $node = $this->factory->method('get' . ucfirst($name))->makePublic();
+
+        if ($extension === null) {
+            $node->addStmts($this->parser->parse('<?php return $this->' . $name . ';'));
+        } else {
+            $serviceModel = $this->manager->getByInstance($extension);
+            foreach ($serviceModel->getProperties() as $property) {
+                $options = $property->getName() . ' => ' . $extension->{'get' . $property->getName()};
+            }
+            $options = '[' . implode(', ', $options) . ']';
+
+            $node->addStmts($this->parser->parse('<?php if ($this->' . $name . ' === null) { $this->' . $name . ' = $this->' . $name . 'Service->compute($this, ' . $options . '); } return $this->' . $name . ';'));
+        }
+
+        $node = $node->getNode();
+        $this->addDocComment($node, 'Get ' . $name, 1);
+
+        $classNode->addStmt($node);
+
+        return $classNode;
     }
 
     /**
