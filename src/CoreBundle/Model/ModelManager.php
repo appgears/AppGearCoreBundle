@@ -262,7 +262,7 @@ class ModelManager
 
                     $service       = array_pop($services);
                     $serviceSetter = 'set' . ucfirst($property->getName()) . 'Service';
-                    $instance->$serviceSetter($this->container->get($service));
+                    $instance->$serviceSetter($this->container->get($service['id']));
 
                     break;
                 }
