@@ -273,7 +273,7 @@ class SourceGenerator
             }
             $options = '[' . implode(', ', $options) . ']';
 
-            $code = '<?php if ($this->' . $propertyName . ' === null) { $this->' . $propertyName . ' = $this->' . $propertyName . 'Service->compute($this, \'' . $propertyName . '\', ' . $options . '); } return $this->' . $propertyName . ';';
+            $code = '<?php return $this->' . $propertyName . 'Service->compute($this, \'' . $propertyName . '\', ' . $options . ');';
         }
 
         $this->addMethod($classNode, $getter, [], $code, 'Get ' . $propertyName);

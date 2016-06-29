@@ -11,5 +11,5 @@ interface ComputedPropertyExtensionInterface
      *
      * @return mixed
      */
-    public function execute($object, $field, array $options = []);
+    public function compute($object, $field, array $options = []);
 }
