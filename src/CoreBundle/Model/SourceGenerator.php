@@ -182,9 +182,6 @@ class SourceGenerator
         // Добавляем свойство к классу
         $classNode->addStmt($node);
 
-        // Сеттер
-        $this->addSetter($propertyName, $classNode);
-
         // Является ли свойство рассчитываемым
         $computedExtension = null;
         foreach ($property->getExtensions() as $extension) {
@@ -194,15 +191,19 @@ class SourceGenerator
             }
         }
 
+        // Создаем свойства и сеттер для сервиса обеспечивающего расчет
         if ($computedExtension !== null) {
-            // Создаем свойства, сеттер и геттер для сервиса обеспечивающего расчет
-            $serviceName    = $propertyName . 'Service';
-            $builder = $this->factory->property($serviceName)->makeProtected();
-            $node    = $builder->getNode();
+            $serviceName = $propertyName . 'Service';
+            $builder     = $this->factory->property($serviceName)->makeProtected();
+            $node        = $builder->getNode();
             $this->addDocComment($node, ucfirst($serviceName), 1);
             $classNode->addStmt($node);
-            $this->addGetter($serviceName, $classNode);
             $this->addSetter($serviceName, $classNode);
+        }
+
+        // Сеттер нужен только для обычных полей
+        if ($computedExtension === null) {
+            $this->addSetter($propertyName, $classNode);
         }
 
         // Геттер
@@ -267,12 +268,12 @@ class SourceGenerator
             $modelService = $this->manager->getByInstance($extension);
             $options      = [];
             foreach ($modelService->getProperties() as $property) {
-                $getter    = 'get' . ucfirst($property->getName());
-                $options[] = '\'' . $property->getName() . '\' => ' . '\'' . $extension->$getter() . '\'';
+                $fieldGetter = 'get' . ucfirst($property->getName());
+                $options[]   = '\'' . $property->getName() . '\' => ' . '\'' . $extension->$fieldGetter() . '\'';
             }
             $options = '[' . implode(', ', $options) . ']';
 
-            $code = '<?php if ($this->' . $propertyName . ' === null) { $this->' . $propertyName . ' = $this->' . $propertyName . 'Service->compute($this, \''.$propertyName.'\', ' . $options . '); } return $this->' . $propertyName . ';';
+            $code = '<?php if ($this->' . $propertyName . ' === null) { $this->' . $propertyName . ' = $this->' . $propertyName . 'Service->compute($this, \'' . $propertyName . '\', ' . $options . '); } return $this->' . $propertyName . ';';
         }
 
         $this->addMethod($classNode, $getter, [], $code, 'Get ' . $propertyName);
