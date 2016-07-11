@@ -57,14 +57,17 @@ class ModelService
     /**
      * Return parents models
      *
-     * @return \Generator
+     * @return Model[]
      */
     public function getParents()
     {
+        $parents = [];
         $current = $this->model;
         while ($parent = $current = $current->getParent()) {
-            yield $parent;
+            $parents[] = $parent;
         }
+
+        return $parents;
     }
 
     /**
