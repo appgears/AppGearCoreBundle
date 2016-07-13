@@ -40,6 +40,8 @@ models:
     parent: property.field
   property.field.string:
     parent: property.field
+  property.field.text:
+    parent: property.field
 
   property.relationship:
     parent: property
