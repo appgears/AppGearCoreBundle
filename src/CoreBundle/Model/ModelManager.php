@@ -2,10 +2,10 @@
 
 namespace AppGear\CoreBundle\Model;
 
+use AppGear\CoreBundle\DependencyInjection\TaggedManager;
 use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
-use AppGear\PlatformBundle\Service\TaggedManager;
 use Cosmologist\Gears\Str\CamelSnakeCase;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;

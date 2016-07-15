@@ -2,6 +2,7 @@
 
 namespace AppGear\CoreBundle;
 
+use AppGear\CoreBundle\DependencyInjection\Compiler\TaggedCompilerPass;
 use AppGear\CoreBundle\DependencyInjection\Module\ModelsConfigurator;
 use AppGear\CoreBundle\DependencyInjection\AppGearExtension;
 use AppGear\CoreBundle\DependencyInjection\Configuration;
@@ -18,6 +19,8 @@ class AppGearCoreBundle extends Bundle
         AppGearExtension::$moduleConfigurators[] = Configuration::$moduleConfigurators[] = new ModelsConfigurator;
 
         parent::build($container);
+
+        $container->addCompilerPass(new TaggedCompilerPass());
     }
 
     /**
