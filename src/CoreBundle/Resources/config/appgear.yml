@@ -36,6 +36,8 @@ models:
     parent: property.field
   property.field.float:
     parent: property.field
+  property.field.html:
+    parent: property.field
   property.field.integer:
     parent: property.field
   property.field.string:
