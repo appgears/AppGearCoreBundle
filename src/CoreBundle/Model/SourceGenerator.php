@@ -7,7 +7,7 @@ use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
 use AppGear\CoreBundle\EntityService\ModelService;
-use Cosmologist\Gears\Fs;
+use Cosmologist\Gears\FileSystem;
 use PhpParser\Builder;
 use PhpParser\BuilderFactory;
 use PhpParser\Comment;
@@ -355,8 +355,8 @@ class SourceGenerator
             if (strpos($className, $bundlesNamespace) === 0) {
                 $bundleDir             = dirname((new ReflectionClass($bundlesClass))->getFileName());
                 $specificClassNamePart = substr($className, strlen($bundlesNamespace));
-                $specificClassNamePath = Fs::normalizeSeparators($specificClassNamePart);
-                $path                  = Fs::joinPaths([$bundleDir, $specificClassNamePath]) . '.php';
+                $specificClassNamePath = FileSystem::normalizeSeparators($specificClassNamePart);
+                $path                  = FileSystem::joinPaths([$bundleDir, $specificClassNamePath]) . '.php';
 
                 return $path;
             }
