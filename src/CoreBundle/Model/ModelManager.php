@@ -6,7 +6,7 @@ use AppGear\CoreBundle\DependencyInjection\TaggedManager;
 use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
-use Cosmologist\Gears\Str\CamelSnakeCase;
+use Cosmologist\Gears\StringType\CamelSnakeCase;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
