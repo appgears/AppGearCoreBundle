@@ -139,6 +139,9 @@ class ModelManager
         if (array_key_exists('parent', $definition)) {
             $model->setParent($this->get($definition['parent'], $this->modelModuleMap[$name] . '.entity.'));
         }
+        if (array_key_exists('abstract', $definition)) {
+            $model->setAbstract($definition['abstract']);
+        }
         if (array_key_exists('toString', $definition)) {
             $model->setToString($definition['toString']);
         }

@@ -2,7 +2,7 @@
 
 namespace AppGear\CoreBundle\Entity;
 
-abstract class Property
+class Property
 {
     
     /**

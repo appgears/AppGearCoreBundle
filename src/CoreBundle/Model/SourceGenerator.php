@@ -124,7 +124,7 @@ class SourceGenerator
         }
 
         // Если модель имеет дочерние модели - делаем её абстрактной
-        if (count($this->manager->children($name)) > 0) {
+        if ($model->getAbstract()) {
             $classNode->makeAbstract();
         }
 

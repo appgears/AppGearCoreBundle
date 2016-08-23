@@ -25,6 +25,7 @@ class ModelsConfigurator implements ConfiguratorInterface
                 ->children()
                     ->scalarNode('parent')->end()
                     ->scalarNode('toString')->end()
+                    ->booleanNode('abstract')->end()
                     ->arrayNode('properties')
                         ->useAttributeAsKey('name')
                         ->prototype('array')
