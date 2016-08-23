@@ -2,6 +2,6 @@
 
 namespace AppGear\CoreBundle\Entity\Extension;
 
-class Property
+abstract class Property
 {
 }

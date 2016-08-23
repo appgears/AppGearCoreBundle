@@ -123,6 +123,11 @@ class SourceGenerator
             }
         }
 
+        // Если модель имеет дочерние модели - делаем её абстрактной
+        if (count($this->manager->children($name)) > 0) {
+            $classNode->makeAbstract();
+        }
+
         // Собираем свойства модели
         $this->buildProperties($model, $classNode);
 

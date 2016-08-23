@@ -3,7 +3,7 @@
 namespace AppGear\CoreBundle\Entity\Property;
 
 use AppGear\CoreBundle\Entity\Property;
-class Relationship extends Property
+abstract class Relationship extends Property
 {
     
     /**
