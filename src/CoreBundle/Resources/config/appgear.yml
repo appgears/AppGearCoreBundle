@@ -13,6 +13,9 @@ models:
         relationship:
           type:     toMany
           target:   property
+      abstract:
+        field:
+          type: boolean
       toString:
         field:
           type: string

@@ -21,6 +21,11 @@ class Model
     protected $properties = array();
     
     /**
+     * Abstract
+     */
+    protected $abstract;
+    
+    /**
      * ToString
      */
     protected $toString;
@@ -74,6 +79,23 @@ class Model
     public function getProperties()
     {
         return $this->properties;
+    }
+    
+    /**
+     * Set abstract
+     */
+    public function setAbstract($abstract)
+    {
+        $this->abstract = $abstract;
+        return $this;
+    }
+    
+    /**
+     * Get abstract
+     */
+    public function getAbstract()
+    {
+        return $this->abstract;
     }
     
     /**
