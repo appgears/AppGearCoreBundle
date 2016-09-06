@@ -21,6 +21,11 @@ class Model
     protected $properties = array();
     
     /**
+     * Extensions
+     */
+    protected $extensions = array();
+    
+    /**
      * Abstract
      */
     protected $abstract;
@@ -79,6 +84,23 @@ class Model
     public function getProperties()
     {
         return $this->properties;
+    }
+    
+    /**
+     * Set extensions
+     */
+    public function setExtensions($extensions)
+    {
+        $this->extensions = $extensions;
+        return $this;
+    }
+    
+    /**
+     * Get extensions
+     */
+    public function getExtensions()
+    {
+        return $this->extensions;
     }
     
     /**

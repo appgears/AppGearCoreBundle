@@ -201,6 +201,18 @@ class ModelManager
                 $model->setProperties($properties);
             }
         }
+
+        $extensions = [];
+        if (array_key_exists('extensions', $definition) &&
+            is_array($definition['extensions']) &&
+            count($definition['extensions']) > 0
+        ) {
+            foreach ($definition['extensions'] as $extensionDefinition) {
+                $extensions[] = $this->load($extensionDefinition);
+            }
+            $model->setExtensions($extensions);
+        }
+
     }
 
     /**
