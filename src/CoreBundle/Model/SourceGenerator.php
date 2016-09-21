@@ -23,7 +23,7 @@ class SourceGenerator
     /**
      * Парсер PHP
      *
-     * @var \PhpParser\Parser
+     * @var \PhpParser\Parser\Php5
      */
     protected $parser;
 
@@ -63,7 +63,7 @@ class SourceGenerator
      */
     public function __construct(ModelManager $manager, array $bundlesClasses)
     {
-        $this->parser  = new Parser(new Lexer());
+        $this->parser  = new Parser\Php5(new Lexer());
         $this->factory = new BuilderFactory();
         $this->manager = $manager;
 
