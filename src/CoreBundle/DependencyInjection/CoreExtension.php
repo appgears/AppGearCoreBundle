@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Parser;
 /**
  * CoreBundle extension
  */
-class AppGearExtension extends Extension implements PrependExtensionInterface
+class CoreExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * AppGear module addons configurators
@@ -38,17 +38,11 @@ class AppGearExtension extends Extension implements PrependExtensionInterface
         $configuration = new Configuration();
         $config        = $this->processConfiguration($configuration, $configs);
 
-        // Dispatch configurations to the suitable module configurators
-        foreach (self::$moduleConfigurators as $configurator)
-        {
-            $configuratorConfig = [];
-            foreach ($config['modules'] as $moduleName=>$moduleConfig) {
-                if (array_key_exists($configurator->getAlias(), $moduleConfig)) {
-                    $configuratorConfig[$moduleName] = $moduleConfig[$configurator->getAlias()];
-                }
+        // Dispatch configurations to the suitable configurators
+        foreach (self::$moduleConfigurators as $configurator) {
+            if (array_key_exists($configurator->getAlias(), $config['modules'])) {
+                $configurator->process($container, $config['modules'][$configurator->getAlias()]);
             }
-
-            $configurator->process($container, $configuratorConfig);
         }
     }
 
@@ -63,10 +57,6 @@ class AppGearExtension extends Extension implements PrependExtensionInterface
     {
         foreach ($container->getParameter('kernel.bundles') as $bundleClass) {
 
-            if (!($bundleAlias = $this->getBundleAlias($bundleClass))) {
-                continue;
-            }
-
             $configPath = dirname((new ReflectionClass($bundleClass))->getFileName())
                 . '/Resources/config/appgear.yml';
 
@@ -78,9 +68,7 @@ class AppGearExtension extends Extension implements PrependExtensionInterface
             $config = $parser->parse(file_get_contents($configPath));
 
             $config = [
-                'modules' => [
-                    $bundleAlias => $config
-                ]
+                'modules' => $config
             ];
 
             $container->prependExtensionConfig($this->getAlias(), $config);
@@ -92,19 +80,6 @@ class AppGearExtension extends Extension implements PrependExtensionInterface
      */
     public function getAlias()
     {
-        return 'appgear';
-    }
-
-    /**
-     * Returns the bundle alias
-     *
-     * @param string $className The bundle class
-     *
-     * @return string Prefix
-     */
-    private function getBundleAlias($className)
-    {
-        $class = new ReflectionClass($className);
-        return Container::underscore(str_replace('\\', '.', $class->getNamespaceName()));
+        return 'core';
     }
 }

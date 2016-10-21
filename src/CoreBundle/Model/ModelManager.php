@@ -20,15 +20,6 @@ class ModelManager
     private $definitions = [];
 
     /**
-     * Model to module map
-     *
-     * Key is full model name, value is module name
-     *
-     * @var array
-     */
-    private $modelModuleMap = [];
-
-    /**
      * Models
      *
      * @var array
@@ -50,37 +41,42 @@ class ModelManager
     private $container;
 
     /**
+     * Registered bundles
+     *
+     * @var array
+     */
+    private $bundles;
+
+    /**
      * ModelManager constructor.
      *
      * @param array              $definitions   Models definitions
      * @param TaggedManager      $taggedManager Tagged service manager
      * @param ContainerInterface $container     Service container
+     * @param array              $bundles       Registered bundles
      */
-    public function __construct(array $definitions, TaggedManager $taggedManager, ContainerInterface $container)
+    public function __construct(
+        array $definitions,
+        TaggedManager $taggedManager,
+        ContainerInterface $container,
+        array $bundles
+    )
     {
-        foreach ($definitions as $moduleName => $moduleDefinitions) {
-            foreach ($moduleDefinitions as $name => $definition) {
-                $fullModelName                        = $moduleName . '.entity.' . $name;
-                $this->definitions[$fullModelName]    = $definition;
-                $this->modelModuleMap[$fullModelName] = $moduleName;
-            }
-        }
+        $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
+        $this->bundles       = $bundles;
     }
 
     /**
      * Return model by name
      *
-     * @param string $name   The model name
-     * @param string $prefix Prefix
+     * @param string $name The model name
      *
      * @return Model
      */
-    public function get($name, $prefix = '')
+    public function get($name)
     {
-        $name = $this->fullName($name, $prefix);
-
         if (!array_key_exists($name, $this->models)) {
             $this->initialize($name);
         }
@@ -137,7 +133,7 @@ class ModelManager
         $this->models[$name] = $model;
 
         if (array_key_exists('parent', $definition)) {
-            $model->setParent($this->get($definition['parent'], $this->modelModuleMap[$name] . '.entity.'));
+            $model->setParent($this->get($definition['parent']));
         }
         if (array_key_exists('abstract', $definition)) {
             $model->setAbstract($definition['abstract']);
@@ -153,16 +149,12 @@ class ModelManager
                 $propertyDefinition = $propertyDefinition[$type];
                 switch ($type) {
                     case 'field':
-                        $propertyType      = $propertyDefinition['type'];
-                        $propertyModelName = $this->fullName($propertyType, $this->modelModuleMap[$name] . '.entity.property.field.');
-                        $property          = $this->instance($propertyModelName);
+                        $property = $this->instance($propertyDefinition['type']);
                         break;
                     case 'relationship':
-                        $propertyType      = $propertyDefinition['type'];
-                        $propertyModelName = $this->fullName($propertyType, $this->modelModuleMap[$name] . '.entity.property.relationship.');
-                        $property          = $this->instance($propertyModelName);
+                        $property = $this->instance($propertyDefinition['type']);
                         /* @var $property Property\Relationship */
-                        $property->setTarget($this->get($propertyDefinition['target'], $this->modelModuleMap[$name] . '.entity.'));
+                        $property->setTarget($this->get($propertyDefinition['target']));
                         break;
                     case 'classType':
                         /** @var Property\ClassType $property */
@@ -173,7 +165,7 @@ class ModelManager
                         break;
                     case 'collection':
                         /** @var Property\Collection $property */
-                        $property = $this->instance('app_gear.core_bundle.entity.property.collection');
+                        $property = $this->instance('core.property.collection');
                         if (array_key_exists('className', $propertyDefinition)) {
                             $property->setClassName($propertyDefinition['className']);
                         }
@@ -216,23 +208,6 @@ class ModelManager
     }
 
     /**
-     * Build model full name
-     *
-     * @param string $name   Short model name
-     * @param string $prefix Prefix
-     *
-     * @return string
-     */
-    protected function fullName($name, $prefix = '')
-    {
-        if (array_key_exists($name, $this->definitions)) {
-            return $name;
-        }
-
-        return $prefix . $name;
-    }
-
-    /**
      * Get model instance
      *
      * @param string $name The model name
@@ -242,8 +217,8 @@ class ModelManager
     public function instance($name)
     {
         $className = $this->fullClassName($name);
-        $instance  = new $className;
-        $this->injectServices($name, $instance);
+
+        //$this->injectServices($name, $instance);
 
         return new $className;
     }
@@ -312,12 +287,14 @@ class ModelManager
      */
     public function fullClassName($name)
     {
-        $className = CamelSnakeCase::snakeToCamel($name);
-        $className = str_replace('.', ' ', $className);
-        $className = ucwords($className);
-        $className = str_replace(' ', '\\', $className);
+        $parts           = explode('.', $name);
+        $bundle          = array_shift($parts);
+        $bundleClass     = $this->bundles[$bundle];
+        $bundleClassRefl = new \ReflectionClass($bundleClass);
+        $parts           = array_map(['\\Cosmologist\\Gears\\StringType\\CamelSnakeCase', 'snakeToCamel'], $parts);
+        $parts           = array_map('ucwords', $parts);
 
-        return $className;
+        return $bundleClassRefl->getNamespaceName() . '\\Entity\\' . implode('\\', $parts);
     }
 
     /**
@@ -344,8 +321,17 @@ class ModelManager
      */
     public function name($instance)
     {
-        $fqcn  = is_object($instance) ? get_class($instance) : $instance;
-        $parts = explode('\\', $fqcn);
+        $fqcn   = is_object($instance) ? get_class($instance) : $instance;
+        $bundle = $this->findClassBundleAlias($fqcn);
+        $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
+        $parts  = explode('\\', trim(substr($fqcn, strlen($bundleClass->getNamespaceName())), '\\'));
+
+        // remove "Entity" namespace part
+        array_shift($parts);
+
+        // Add bundle alias
+        array_unshift($parts, $bundle);
+        
         $parts = array_map(
             function ($value) {
                 return CamelSnakeCase::camelToSnake($value);
@@ -354,6 +340,25 @@ class ModelManager
         $name  = implode('.', $parts);
 
         return $name;
+    }
+
+    /**
+     * Find bundle alias for class
+     *
+     * @param string $fqcn FQCN
+     *
+     * @return null|string
+     */
+    protected function findClassBundleAlias($fqcn)
+    {
+        foreach ($this->bundles as $alias => $bundleClass) {
+            $bundleClassRefl = new \ReflectionClass($bundleClass);
+            if (strpos($fqcn, $bundleClassRefl->getNamespaceName()) === 0) {
+                return $alias;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -368,9 +373,7 @@ class ModelManager
         $children = [];
         foreach ($this->definitions as $definitionName => $definition) {
             if (array_key_exists('parent', $definition)) {
-                $parentName     = $definition['parent'];
-                $parentFullName = $this->fullName($parentName, $this->modelModuleMap[$name] . '.entity.');
-                if ($parentFullName === $name) {
+                if ($definition['parent'] === $name) {
                     $children[] = $this->get($definitionName);
                 }
             }

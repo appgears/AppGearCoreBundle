@@ -3,8 +3,8 @@
 namespace AppGear\CoreBundle;
 
 use AppGear\CoreBundle\DependencyInjection\Compiler\TaggedCompilerPass;
+use AppGear\CoreBundle\DependencyInjection\CoreExtension;
 use AppGear\CoreBundle\DependencyInjection\Module\ModelsConfigurator;
-use AppGear\CoreBundle\DependencyInjection\AppGearExtension;
 use AppGear\CoreBundle\DependencyInjection\Configuration;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -14,9 +14,14 @@ class AppGearCoreBundle extends Bundle
     /**
      * {@inheritdoc}
      */
+    protected $name = 'core';
+
+    /**
+     * {@inheritdoc}
+     */
     public function build(ContainerBuilder $container)
     {
-        AppGearExtension::$moduleConfigurators[] = Configuration::$moduleConfigurators[] = new ModelsConfigurator;
+        CoreExtension::$moduleConfigurators[] = Configuration::$moduleConfigurators[] = new ModelsConfigurator;
 
         parent::build($container);
 
@@ -24,14 +29,14 @@ class AppGearCoreBundle extends Bundle
     }
 
     /**
-     * Override method for using "appgear" section name in the config
+     * Override method for using "core" section name in the config
      *
      * {@inheritdoc}
      */
     public function getContainerExtension()
     {
         if (null === $this->extension) {
-            $this->extension = new AppGearExtension();
+            $this->extension = new CoreExtension();
         }
 
         return $this->extension;

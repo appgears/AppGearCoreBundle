@@ -29,18 +29,13 @@ class Configuration implements ConfigurationInterface
 
         $modulesNode = $rootNode
             ->children()
-                ->arrayNode('modules')
-                    ->useAttributeAsKey('name')
-                    ->prototype('array')
-                        ->children();
+                ->arrayNode('modules');
 
         foreach (self::$moduleConfigurators as $configurator) {
             $modulesNode = $modulesNode->append($configurator->buildNode());
         }
 
         $modulesNode
-                        ->end()
-                    ->end()
                 ->end()
             ->end()
         ;

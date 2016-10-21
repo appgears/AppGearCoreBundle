@@ -1,84 +1,84 @@
 models:
 
-  model:
+  core.model:
     properties:
       name:
         field:
-          type: string
+          type: core.property.field.string
       parent:
         relationship:
-          type:     toOne
-          target:   model
+          type:     core.property.relationship.toOne
+          target:   core.model
       properties:
         relationship:
-          type:     toMany
-          target:   property
+          type:     core.property.relationship.toMany
+          target:   core.property
       extensions:
         relationship:
-          type: toMany
-          target: extension.model
+          type: core.property.relationship.toMany
+          target: core.extension.model
       abstract:
         field:
-          type: boolean
+          type: core.property.field.boolean
       toString:
         field:
-          type: string
+          type: core.property.field.string
 
-  property:
+  core.property:
     properties:
       name:
         field:
-          type: string
+          type: core.property.field.string
       extensions:
         relationship:
-          type: toMany
-          target: extension.property
-  property.field:
-    parent: property
-  property.field.boolean:
-    parent: property.field
-  property.field.datetime:
-    parent: property.field
-  property.field.file:
-    parent: property.field
-  property.field.float:
-    parent: property.field
-  property.field.integer:
-    parent: property.field
-  property.field.markdown:
-    parent: property.field
-  property.field.string:
-    parent: property.field
-  property.field.text:
-    parent: property.field
+          type: core.property.relationship.toMany
+          target: core.extension.property
+  core.property.field:
+    parent: core.property
+  core.property.field.boolean:
+    parent: core.property.field
+  core.property.field.datetime:
+    parent: core.property.field
+  core.property.field.file:
+    parent: core.property.field
+  core.property.field.float:
+    parent: core.property.field
+  core.property.field.integer:
+    parent: core.property.field
+  core.property.field.markdown:
+    parent: core.property.field
+  core.property.field.string:
+    parent: core.property.field
+  core.property.field.text:
+    parent: core.property.field
 
-  property.relationship:
-    parent: property
+  core.property.relationship:
+    parent: core.property
     properties:
       target:
         relationship:
-          type:     toOne
-          target:   model
-  property.relationship.toMany:
-    parent: property.relationship
-  property.relationship.toOne:
-    parent: property.relationship
+          type:     core.property.relationship.toOne
+          target:   core.model
+  core.property.relationship.toMany:
+    parent: core.property.relationship
+  core.property.relationship.toOne:
+    parent: core.property.relationship
 
-  property.classType:
-    parent: property
+  core.property.classType:
+    parent: core.property
     properties:
       className:
         field:
-          type: string
+          type: core.property.field.string
 
-  property.collection:
-    parent: property
+  core.property.collection:
+    parent: core.property
     properties:
       className:
         field:
-          type: string
+          type: core.property.field.string
 
-  extension.model: []
-  extension.property: []
-  extension.property.computed:
-    parent: extension.property
+  core.extension.model: []
+  core.extension.property: []
+  core.extension.property.computed:
+    parent: core.extension.property
