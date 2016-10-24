@@ -158,7 +158,7 @@ class ModelManager
                         break;
                     case 'classType':
                         /** @var Property\ClassType $property */
-                        $property = $this->instance('app_gear.core_bundle.entity.property.classType');
+                        $property = $this->instance('core.property.classType');
                         if (array_key_exists('className', $propertyDefinition)) {
                             $property->setClassName($propertyDefinition['className']);
                         }
