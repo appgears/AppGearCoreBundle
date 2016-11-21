@@ -30,7 +30,7 @@ class ModelSourceGenerateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $modelManager    = $this->getContainer()->get('app_gear.core.model.manager');
-        $sourceGenerator = $this->getContainer()->get('app_gear.core.model.source_generator');
+        $sourceGenerator = $this->getContainer()->get('app_gear.core.model.generator.source');
 
         if ($name = $input->getArgument('name')) {
             $sourceGenerator->generate($modelManager->get($name));

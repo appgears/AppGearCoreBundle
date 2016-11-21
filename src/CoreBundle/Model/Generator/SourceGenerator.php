@@ -1,12 +1,12 @@
 <?php
 
-namespace AppGear\CoreBundle\Model;
+namespace AppGear\CoreBundle\Model\Generator;
 
 use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
-use AppGear\CoreBundle\Entity\Property\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
 use AppGear\CoreBundle\EntityService\ModelService;
+use AppGear\CoreBundle\Model\ModelManager;
 use Cosmologist\Gears\FileSystem;
 use PhpParser\Builder;
 use PhpParser\BuilderFactory;
@@ -17,9 +17,24 @@ use PhpParser\Node\Stmt\UseUse;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 use ReflectionClass;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class SourceGenerator
 {
+    /**
+     * Model manager
+     *
+     * @var ModelManager
+     */
+    private $modelManager;
+
+    /**
+     * Event dispatcher
+     *
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
     /**
      * Парсер PHP
      *
@@ -42,13 +57,6 @@ class SourceGenerator
     protected $alreadyGeneratedModels = [];
 
     /**
-     * Model manager
-     *
-     * @var ModelManager
-     */
-    private $manager;
-
-    /**
      * Bundles classes
      *
      * @var array
@@ -56,16 +64,28 @@ class SourceGenerator
     private $bundlesClasses;
 
     /**
+     * Class node
+     *
+     * @var Node\Stmt\Class_
+     */
+    private $classNode;
+
+    /**
      * Constructor
      *
-     * @param ModelManager $manager        Model manager
-     * @param array        $bundlesClasses Bundles classes
+     * @param ModelManager             $modelManager    Model manager
+     * @param EventDispatcherInterface $eventDispatcher Event dispatcher
+     * @param array                    $bundlesClasses  Bundles classes
      */
-    public function __construct(ModelManager $manager, array $bundlesClasses)
+    public function __construct(ModelManager $modelManager,
+                                EventDispatcherInterface $eventDispatcher,
+                                array $bundlesClasses)
     {
+        $this->modelManager    = $modelManager;
+        $this->eventDispatcher = $eventDispatcher;
+
         $this->parser  = new Parser\Php5(new Lexer());
         $this->factory = new BuilderFactory();
-        $this->manager = $manager;
 
         foreach ($bundlesClasses as $bundlesClass) {
             $this->bundlesClasses[(new ReflectionClass($bundlesClass))->getNamespaceName()] = $bundlesClass;
@@ -91,18 +111,14 @@ class SourceGenerator
             $this->generate($parent);
         }
 
-        // Принтер для генерации исходного кода на основе его представления
-        $prettyPrinter = new Standard;
-
-        $name   = $model->getName();
-        $parent = $model->getParent();
+        $name = $model->getName();
 
         // Неймспейс
-        $scope         = $this->manager->scope($name);
+        $scope         = $this->modelManager->scope($name);
         $namespaceNode = new Node\Stmt\Namespace_(new Node\Name($scope));
 
         // Создаем класс для модели
-        $classNode = $this->factory->class($this->manager->className($name));
+        $this->classNode = $this->factory->class($this->modelManager->className($name));
 
         // Если модель наследуется
         $useNode = null;
@@ -110,37 +126,41 @@ class SourceGenerator
             $parentName = $parent->getName();
 
             // Если имена моделей совпадают, то для избежаний конфликта добавляем extend с FQCN
-            if ($this->manager->className($name) === $this->manager->className($parentName)) {
-                $classNode->extend('\\' . $this->manager->fullClassName($parentName));
+            if ($this->modelManager->className($name) === $this->modelManager->className($parentName)) {
+                $this->classNode->extend('\\' . $this->modelManager->fullClassName($parentName));
             } else {
                 // Если неймспейс текущей модели не совпадает с неймспейсом родительской модели - добавляем его через use
-                $parentScope = $this->manager->scope($parentName);
+                $parentScope = $this->modelManager->scope($parentName);
                 if ($scope !== $parentScope) {
-                    $useNode = new Node\Stmt\Use_(array(new UseUse(new Node\Name($this->manager->fullClassName($parentName)))));
+                    $useNode = new Node\Stmt\Use_(array(new UseUse(new Node\Name($this->modelManager->fullClassName($parentName)))));
                 }
 
-                $classNode->extend($this->manager->className($parentName));
+                $this->classNode->extend($this->modelManager->className($parentName));
             }
         }
 
         // Если модель имеет дочерние модели - делаем её абстрактной
         if ($model->getAbstract()) {
-            $classNode->makeAbstract();
+            $this->classNode->makeAbstract();
         }
 
         // Собираем свойства модели
-        $this->buildProperties($model, $classNode);
+        $this->buildProperties($model);
 
         // Собираем __toString
-        $this->buildToString($model, $classNode);
+        $this->buildToString($model);
+
+        // Кидаем событие
+        $event = new GeneratorEvent($model, $this->classNode);
+        $this->eventDispatcher->dispatch('appgear.core.model.generator.generate.after', $event);
 
         // Генерируем исходный код
         $sourceElements = array($namespaceNode);
         if (isset($useNode)) {
             $sourceElements[] = $useNode;
         }
-        $sourceElements[] = $classNode->getNode();
-        $sourceCode       = $prettyPrinter->prettyPrintFile($sourceElements);
+        $sourceElements[] = $this->classNode->getNode();
+        $sourceCode       = (new Standard)->prettyPrintFile($sourceElements);
 
         // Сохраняем класс модели в файл
         $this->save($name, $sourceCode);
@@ -149,25 +169,35 @@ class SourceGenerator
     }
 
     /**
-     * Подключаем логику к классу через атомы
+     * Собираем класс
      *
-     * @param Model $model     Модель
-     * @param Node  $classNode Узел класса
+     * @param Model $model Модель
      */
-    private function buildProperties($model, $classNode)
+    private function buildClass($model)
     {
         foreach ($model->getProperties() as $property) {
-            $this->buildProperty($property, $classNode);
+            $this->buildProperty($property);
+        }
+    }
+
+    /**
+     * Подключаем свойства к классу
+     *
+     * @param Model $model Модель
+     */
+    private function buildProperties($model)
+    {
+        foreach ($model->getProperties() as $property) {
+            $this->buildProperty($property);
         }
     }
 
     /**
      * Подключаем свойство к классу
      *
-     * @param Property $property  Свойство
-     * @param Node     $classNode Узел класса
+     * @param Property $property Свойство
      */
-    private function buildProperty($property, $classNode)
+    private function buildProperty($property)
     {
         $propertyName = $property->getName();
 
@@ -185,7 +215,7 @@ class SourceGenerator
         $this->addDocComment($node, ucfirst($propertyName), 1);
 
         // Добавляем свойство к классу
-        $classNode->addStmt($node);
+        $this->classNode->addStmt($node);
 
         // Является ли свойство рассчитываемым
         $computedExtension = null;
@@ -202,17 +232,17 @@ class SourceGenerator
             $builder     = $this->factory->property($serviceName)->makeProtected();
             $node        = $builder->getNode();
             $this->addDocComment($node, ucfirst($serviceName), 1);
-            $classNode->addStmt($node);
-            $this->addSetter($serviceName, $classNode);
+            $this->classNode->addStmt($node);
+            $this->addSetter($serviceName);
         }
 
         // Сеттер нужен только для обычных полей
         if ($computedExtension === null) {
-            $this->addSetter($propertyName, $classNode);
+            $this->addSetter($propertyName);
         }
 
         // Геттер
-        $this->addGetter($propertyName, $classNode, $computedExtension);
+        $this->addGetter($propertyName, $computedExtension);
     }
 
     /**
@@ -245,24 +275,22 @@ class SourceGenerator
      * Добавляет cеттер к классу для свойства
      *
      * @param string $propertyName Геттер для свойства
-     * @param Node   $classNode    Узел класса
      */
-    private function addSetter($propertyName, $classNode)
+    private function addSetter($propertyName)
     {
         $setter = 'set' . ucfirst($propertyName);
         $code   = '<?php $this->' . $propertyName . ' = $' . $propertyName . '; return $this;';
 
-        $this->addMethod($classNode, $setter, [$propertyName], $code, 'Set ' . $propertyName);
+        $this->addMethod($setter, [$propertyName], $code, 'Set ' . $propertyName);
     }
 
     /**
      * Добавляет геттер к классу для свойства
      *
      * @param string $propertyName Геттер для свойства
-     * @param Node   $classNode    Узел класса
      * @param null   $extension    Computed extension
      */
-    private function addGetter($propertyName, $classNode, $extension = null)
+    private function addGetter($propertyName, $extension = null)
     {
         $getter = 'get' . ucfirst($propertyName);
 
@@ -270,7 +298,7 @@ class SourceGenerator
             $code = '<?php return $this->' . $propertyName . ';';
         } else {
             /** @var ModelService $modelService */
-            $modelService = $this->manager->getByInstance($extension);
+            $modelService = $this->modelManager->getByInstance($extension);
             $options      = [];
             foreach ($modelService->getProperties() as $property) {
                 $fieldGetter = 'get' . ucfirst($property->getName());
@@ -281,19 +309,18 @@ class SourceGenerator
             $code = '<?php return $this->' . $propertyName . 'Service->compute($this, \'' . $propertyName . '\', ' . $options . ');';
         }
 
-        $this->addMethod($classNode, $getter, [], $code, 'Get ' . $propertyName);
+        $this->addMethod($getter, [], $code, 'Get ' . $propertyName);
     }
 
     /**
      * Добавляет метод к классу для свойства
      *
-     * @param Node   $classNode  Узел класса
      * @param string $name       Имя метод
      * @param array  $parameters Список параметров
      * @param string $code       Код метода
      * @param string $comment    Комментарий к методу
      */
-    private function addMethod($classNode, $name, $parameters, $code, $comment)
+    private function addMethod($name, $parameters, $code, $comment)
     {
         $node = $this->factory->method($name)->makePublic();
         foreach ($parameters as $parameter) {
@@ -308,23 +335,22 @@ class SourceGenerator
         $node->addStmts($this->parser->parse($code));
         $node = $node->getNode();
         $this->addDocComment($node, $comment, 1);
-        $classNode->addStmt($node);
+        $this->classNode->addStmt($node);
     }
 
     /**
      * Подключаем логику к классу через атомы
      *
-     * @param Model $model     Модель
-     * @param Node  $classNode Узел класса
+     * @param Model $model Модель
      */
-    private function buildToString($model, $classNode)
+    private function buildToString($model)
     {
         if ($toString = $model->getToString()) {
             $node = $this->factory->method('__toString')->makePublic();
             $code = '<?php return (string) $this->' . $toString . ';';
             $node->addStmts($this->parser->parse($code));
             $node = $node->getNode();
-            $classNode->addStmt($node);
+            $this->classNode->addStmt($node);
         }
     }
 
@@ -355,7 +381,7 @@ class SourceGenerator
      */
     private function getModelPath($name)
     {
-        $className = $this->manager->fullClassName($name);
+        $className = $this->modelManager->fullClassName($name);
         foreach ($this->bundlesClasses as $bundlesNamespace => $bundlesClass) {
             if (strpos($className, $bundlesNamespace) === 0) {
                 $bundleDir             = dirname((new ReflectionClass($bundlesClass))->getFileName());

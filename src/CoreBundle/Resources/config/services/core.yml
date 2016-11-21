@@ -8,13 +8,14 @@ services:
           - '@service_container'
           - '%kernel.bundles%'
 
-    app_gear.core.model.source_generator:
-        class: AppGear\CoreBundle\Model\SourceGenerator
+    app_gear.core.model.generator.source:
+        class: AppGear\CoreBundle\Model\Generator\SourceGenerator
         arguments:
-          - @app_gear.core.model.manager
-          - %kernel.bundles%
+          - '@app_gear.core.model.manager'
+          - '@event_dispatcher'
+          - '%kernel.bundles%'
 
     app_gear.core.tagged_manager:
         class: AppGear\CoreBundle\DependencyInjection\TaggedManager
         arguments:
-          - @service_container
+          - '@service_container'
