@@ -3,7 +3,6 @@
 namespace AppGear\CoreBundle\Model;
 
 use AppGear\CoreBundle\DependencyInjection\TaggedManager;
-use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use Cosmologist\Gears\StringType\CamelSnakeCase;
@@ -216,50 +215,7 @@ class ModelManager
      */
     public function instance($name)
     {
-        $className = $this->fullClassName($name);
-
-        //$this->injectServices($name, $instance);
-
-        return new $className;
-    }
-
-    /**
-     * Inject services for computed fields
-     *
-     * @param string $name     The model name
-     * @param object $instance Instance
-     *
-     * @return object
-     */
-    public function injectServices($name, $instance)
-    {
-        $model = $this->get($name);
-        foreach ($model->getProperties() as $property) {
-            /** @var Property $property $extension */
-            foreach ($property->getExtensions() as $extension) {
-                if ($extension instanceof Computed) {
-                    $extensionModel = $this->getByInstance($extension);
-                    $services       = $this->taggedManager->findServices(
-                        'extension.property.computed',
-                        ['model' => $extensionModel->getName()]
-                    );
-                    if (count($services) !== 1) {
-                        throw new \RuntimeException(
-                            sprintf('Found more than 1 or not found services for computed extension with name: %s',
-                                $extensionModel->getName())
-                        );
-                    }
-
-                    $service       = array_pop($services);
-                    $serviceSetter = 'set' . ucfirst($property->getName()) . 'Service';
-                    $instance->$serviceSetter($this->container->get($service['id']));
-
-                    break;
-                }
-            }
-        }
-
-        return $instance;
+        return $this->fullClassName($name);
     }
 
     /**
