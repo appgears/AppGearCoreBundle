@@ -215,7 +215,9 @@ class ModelManager
      */
     public function instance($name)
     {
-        return $this->fullClassName($name);
+        $className = $this->fullClassName($name);
+
+        return new $className;
     }
 
     /**
