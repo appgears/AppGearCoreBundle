@@ -51,6 +51,8 @@ class ModelsConfigurator implements ConfiguratorInterface
                                     ->arrayNode('extensions')
                                         ->prototype('variable')->end()
                                     ->end()
+                                    ->scalarNode('defaultValue')
+                                    ->end()
                                 ->end()
                             ->end()
                             ->arrayNode('relationship')

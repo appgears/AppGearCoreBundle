@@ -4,6 +4,7 @@ namespace AppGear\CoreBundle\Model\Generator;
 
 use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
+use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
 use AppGear\CoreBundle\EntityService\ModelService;
 use AppGear\CoreBundle\Model\ModelManager;
@@ -169,18 +170,6 @@ class SourceGenerator
     }
 
     /**
-     * Собираем класс
-     *
-     * @param Model $model Модель
-     */
-    private function buildClass($model)
-    {
-        foreach ($model->getProperties() as $property) {
-            $this->buildProperty($property);
-        }
-    }
-
-    /**
      * Подключаем свойства к классу
      *
      * @param Model $model Модель
@@ -205,7 +194,9 @@ class SourceGenerator
         $builder = $this->factory->property($propertyName)->makeProtected();
 
         // Значение по-умолчанию
-        if ($property instanceof ToMany) {
+        if ($property instanceof Property\Field) {
+            $builder->setDefault($property->getDefaultValue());
+        } elseif ($property instanceof ToMany) {
             $builder->setDefault([]);
         }
 

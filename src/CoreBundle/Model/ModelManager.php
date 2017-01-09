@@ -148,7 +148,11 @@ class ModelManager
                 $propertyDefinition = $propertyDefinition[$type];
                 switch ($type) {
                     case 'field':
+                        /** @var Property\Field $property */
                         $property = $this->instance($propertyDefinition['type']);
+                        if (array_key_exists('defaultValue', $propertyDefinition)) {
+                            $property->setDefaultValue($propertyDefinition['defaultValue']);
+                        }
                         break;
                     case 'relationship':
                         $property = $this->instance($propertyDefinition['type']);

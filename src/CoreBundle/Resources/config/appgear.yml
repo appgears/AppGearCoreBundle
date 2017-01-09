@@ -35,6 +35,10 @@ models:
           target: core.extension.property
   core.property.field:
     parent: core.property
+    properties:
+      defaultValue:
+        field:
+          type: core.property.field.mixed
   core.property.field.boolean:
     parent: core.property.field
   core.property.field.datetime:
@@ -46,6 +50,8 @@ models:
   core.property.field.integer:
     parent: core.property.field
   core.property.field.markdown:
+    parent: core.property.field
+  core.property.field.mixed:
     parent: core.property.field
   core.property.field.string:
     parent: core.property.field
