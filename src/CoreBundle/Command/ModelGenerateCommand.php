@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 /**
  * Generate entities
  */
-class ModelSourceGenerateCommand extends ContainerAwareCommand
+class ModelGenerateCommand extends ContainerAwareCommand
 {
     /**
      * {@inheritdoc}
@@ -19,7 +19,7 @@ class ModelSourceGenerateCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('appgear:core:model:source_generate')
+            ->setName('appgear:core:model:generate')
             ->setDescription('Generate source code for models')
             ->addArgument('name', InputArgument::OPTIONAL, 'Generate source only for the model');
     }
