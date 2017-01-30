@@ -195,7 +195,9 @@ class SourceGenerator
 
         // Значение по-умолчанию
         if ($property instanceof Property\Field) {
-            $builder->setDefault($property->getDefaultValue());
+            if (null !== $value = $property->getDefaultValue()) {
+                $builder->setDefault($value);
+            }
         } elseif ($property instanceof ToMany) {
             $builder->setDefault([]);
         }

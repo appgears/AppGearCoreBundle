@@ -9,7 +9,7 @@ class Field extends Property
     /**
      * DefaultValue
      */
-    protected $defaultValue = null;
+    protected $defaultValue;
     
     /**
      * Set defaultValue
