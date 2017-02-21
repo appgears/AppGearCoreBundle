@@ -12,6 +12,11 @@ class Relationship extends Property
     protected $target;
     
     /**
+     * Composition
+     */
+    protected $composition = false;
+    
+    /**
      * Set target
      */
     public function setTarget($target)
@@ -26,5 +31,22 @@ class Relationship extends Property
     public function getTarget()
     {
         return $this->target;
+    }
+    
+    /**
+     * Set composition
+     */
+    public function setComposition($composition)
+    {
+        $this->composition = $composition;
+        return $this;
+    }
+    
+    /**
+     * Get composition
+     */
+    public function getComposition()
+    {
+        return $this->composition;
     }
 }

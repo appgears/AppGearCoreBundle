@@ -158,6 +158,7 @@ class ModelManager
                         $property = $this->instance($propertyDefinition['type']);
                         /* @var $property Property\Relationship */
                         $property->setTarget($this->get($propertyDefinition['target']));
+                        $property->setComposition($propertyDefinition['composition']);
                         break;
                     case 'classType':
                         /** @var Property\ClassType $property */

@@ -63,8 +63,12 @@ models:
     properties:
       target:
         relationship:
-          type:     core.property.relationship.toOne
-          target:   core.model
+          type: core.property.relationship.toOne
+          target: core.model
+      composition:
+        field:
+          type: core.property.field.boolean
+          defaultValue: false
   core.property.relationship.toMany:
     parent: core.property.relationship
   core.property.relationship.toOne:
