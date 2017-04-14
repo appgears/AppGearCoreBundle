@@ -1,6 +1,7 @@
 models:
 
   core.model:
+    toString: name
     properties:
       name:
         field:
