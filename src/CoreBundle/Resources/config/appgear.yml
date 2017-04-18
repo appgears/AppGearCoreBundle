@@ -5,7 +5,7 @@ models:
     properties:
       name:
         field:
-          type: core.property.field.string
+          type: core.property.field.string_type
       parent:
         relationship:
           type:     core.property.relationship.toOne
@@ -20,16 +20,16 @@ models:
           target: core.extension.model
       abstract:
         field:
-          type: core.property.field.boolean
+          type: core.property.field.boolean_type
       toString:
         field:
-          type: core.property.field.string
+          type: core.property.field.string_type
 
   core.property:
     properties:
       name:
         field:
-          type: core.property.field.string
+          type: core.property.field.string_type
       extensions:
         relationship:
           type: core.property.relationship.toMany
@@ -39,24 +39,24 @@ models:
     properties:
       defaultValue:
         field:
-          type: core.property.field.mixed
-  core.property.field.boolean:
+          type: core.property.field.mixed_type
+  core.property.field.boolean_type:
     parent: core.property.field
-  core.property.field.datetime:
+  core.property.field.datetime_type:
     parent: core.property.field
-  core.property.field.file:
+  core.property.field.file_type:
     parent: core.property.field
-  core.property.field.float:
+  core.property.field.float_type:
     parent: core.property.field
-  core.property.field.integer:
+  core.property.field.integer_type:
     parent: core.property.field
-  core.property.field.markdown:
+  core.property.field.markdown_type:
     parent: core.property.field
-  core.property.field.mixed:
+  core.property.field.mixed_type:
     parent: core.property.field
-  core.property.field.string:
+  core.property.field.string_type:
     parent: core.property.field
-  core.property.field.text:
+  core.property.field.text_type:
     parent: core.property.field
 
   core.property.relationship:
@@ -68,7 +68,7 @@ models:
           target: core.model
       composition:
         field:
-          type: core.property.field.boolean
+          type: core.property.field.boolean_type
           defaultValue: false
   core.property.relationship.toMany:
     parent: core.property.relationship
@@ -80,14 +80,14 @@ models:
     properties:
       className:
         field:
-          type: core.property.field.string
+          type: core.property.field.string_type
 
   core.property.collection:
     parent: core.property
     properties:
       className:
         field:
-          type: core.property.field.string
+          type: core.property.field.string_type
 
   core.extension.model: []
   core.extension.property: []

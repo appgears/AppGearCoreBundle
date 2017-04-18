@@ -3,6 +3,6 @@
 namespace AppGear\CoreBundle\Entity\Property\Field;
 
 use AppGear\CoreBundle\Entity\Property\Field;
-class Text extends Field
+class IntegerType extends Field
 {
 }
