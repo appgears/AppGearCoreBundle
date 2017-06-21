@@ -7,6 +7,7 @@ use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
 use AppGear\CoreBundle\EntityService\ModelService;
+use AppGear\CoreBundle\EntityService\PropertyService;
 use AppGear\CoreBundle\Model\ModelManager;
 use Cosmologist\Gears\FileSystem;
 use PhpParser\Builder;
@@ -211,13 +212,7 @@ class SourceGenerator
         $this->classNode->addStmt($node);
 
         // Является ли свойство рассчитываемым
-        $computedExtension = null;
-        foreach ($property->getExtensions() as $extension) {
-            if ($extension instanceof Computed) {
-                $computedExtension = $extension;
-                break;
-            }
-        }
+        $computedExtension = (new PropertyService($property))->getExtension(Computed::class);
 
         // Создаем свойства и сеттер для сервиса обеспечивающего расчет
         if ($computedExtension !== null) {
