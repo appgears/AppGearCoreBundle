@@ -59,8 +59,7 @@ class ModelManager
         TaggedManager $taggedManager,
         ContainerInterface $container,
         array $bundles
-    )
-    {
+    ) {
         $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
@@ -157,7 +156,9 @@ class ModelManager
                     case 'relationship':
                         $property = $this->instance($propertyDefinition['type']);
                         /* @var $property Property\Relationship */
-                        $property->setTarget($this->get($propertyDefinition['target']));
+                        if ($propertyDefinition['target'] !== null) {
+                            $property->setTarget($this->get($propertyDefinition['target']));
+                        }
                         $property->setComposition($propertyDefinition['composition']);
                         break;
                     case 'classType':
@@ -284,17 +285,17 @@ class ModelManager
      */
     public function name($instance)
     {
-        $fqcn   = is_object($instance) ? get_class($instance) : $instance;
-        $bundle = $this->findClassBundleAlias($fqcn);
+        $fqcn        = is_object($instance) ? get_class($instance) : $instance;
+        $bundle      = $this->findClassBundleAlias($fqcn);
         $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
-        $parts  = explode('\\', trim(substr($fqcn, strlen($bundleClass->getNamespaceName())), '\\'));
+        $parts       = explode('\\', trim(substr($fqcn, strlen($bundleClass->getNamespaceName())), '\\'));
 
         // remove "Entity" namespace part
         array_shift($parts);
 
         // Add bundle alias
         array_unshift($parts, $bundle);
-        
+
         $parts = array_map(
             function ($value) {
                 return CamelSnakeCase::camelToSnake($value);

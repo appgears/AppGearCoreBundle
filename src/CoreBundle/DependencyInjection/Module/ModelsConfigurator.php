@@ -61,7 +61,7 @@ class ModelsConfigurator implements ConfiguratorInterface
                                         ->isRequired()
                                     ->end()
                                     ->scalarNode('target')
-                                        ->isRequired()
+                                        ->defaultNull()
                                     ->end()
                                     ->booleanNode('composition')
                                         ->defaultFalse()
