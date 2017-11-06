@@ -70,4 +70,23 @@ class ModelHelper
             }
         }
     }
+
+    /**
+     * Get model relationship by name
+     *
+     * @param Model  $model Model
+     * @param string $name  Relationship name
+     *
+     * @return Property\Relationship|null
+     */
+    public static function getRelationship(Model $model, string $name): ?Property\Relationship
+    {
+        $property = self::getProperty($model, $name);
+
+        if ($property instanceof Property\Relationship) {
+            return $property;
+        }
+
+        return null;
+    }
 }
