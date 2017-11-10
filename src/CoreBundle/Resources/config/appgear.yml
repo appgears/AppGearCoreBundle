@@ -8,12 +8,12 @@ models:
           type: core.property.field.string_type
       parent:
         relationship:
-          type:     core.property.relationship.toOne
-          target:   core.model
+          type: core.property.relationship.toOne
+          target: core.model
       properties:
         relationship:
-          type:     core.property.relationship.toMany
-          target:   core.property
+          type: core.property.relationship.toMany
+          target: core.property
       extensions:
         relationship:
           type: core.property.relationship.toMany
@@ -91,5 +91,3 @@ models:
 
   core.extension.model: []
   core.extension.property: []
-  core.extension.property.computed:
-    parent: core.extension.property
