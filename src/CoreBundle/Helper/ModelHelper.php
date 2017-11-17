@@ -2,6 +2,7 @@
 
 namespace AppGear\CoreBundle\Helper;
 
+use AppGear\CoreBundle\Entity\Extension\Model as ExtensionModel;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use Generator;
@@ -85,6 +86,25 @@ class ModelHelper
 
         if ($property instanceof Property\Relationship) {
             return $property;
+        }
+
+        return null;
+    }
+
+    /**
+     * Return specified model extension
+     *
+     * @param Model  $model Model
+     * @param string $fqcn  Extension FQCN
+     *
+     * @return ExtensionModel|null
+     */
+    public static function getExtension(Model $model, string $fqcn): ?ExtensionModel
+    {
+        foreach ($model->getExtensions() as $extension) {
+            if ($extension instanceof $fqcn) {
+                return $extension;
+            }
         }
 
         return null;
