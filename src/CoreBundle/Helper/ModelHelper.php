@@ -6,9 +6,34 @@ use AppGear\CoreBundle\Entity\Extension\Model as ExtensionModel;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use Generator;
+use ReflectionClass;
 
 class ModelHelper
 {
+    /**
+     * Build FQCN for the model name
+     *
+     * @param string $model   The model name
+     * @param array  $bundles Bundles from kernel.bundles
+     *
+     * @return string FQCN
+     */
+    public static function getFqcn($model, array $bundles)
+    {
+        $parts       = explode('.', $model);
+        $bundle      = array_shift($parts);
+        $bundleClass = $bundles[$bundle];
+        $reflection  = new ReflectionClass($bundleClass);
+        $parts       = array_map(['\\Cosmologist\\Gears\\StringType\\CamelSnakeCase', 'snakeToCamel'], $parts);
+
+        $fqcn = $reflection->getNamespaceName() . '\\Entity';
+        if (count($parts)) {
+            $fqcn .= '\\' . implode('\\', $parts);
+        }
+
+        return $fqcn;
+    }
+
     /**
      * Return self and parents models
      *

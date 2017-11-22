@@ -5,6 +5,7 @@ namespace AppGear\CoreBundle\Model;
 use AppGear\CoreBundle\DependencyInjection\TaggedManager;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
+use AppGear\CoreBundle\Helper\ModelHelper;
 use Cosmologist\Gears\StringType\CamelSnakeCase;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -251,14 +252,7 @@ class ModelManager
      */
     public function fullClassName($name)
     {
-        $parts           = explode('.', $name);
-        $bundle          = array_shift($parts);
-        $bundleClass     = $this->bundles[$bundle];
-        $bundleClassRefl = new \ReflectionClass($bundleClass);
-        $parts           = array_map(['\\Cosmologist\\Gears\\StringType\\CamelSnakeCase', 'snakeToCamel'], $parts);
-        $parts           = array_map('ucwords', $parts);
-
-        return $bundleClassRefl->getNamespaceName() . '\\Entity\\' . implode('\\', $parts);
+        return ModelHelper::getFqcn($name, $this->bundles);
     }
 
     /**
