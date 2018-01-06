@@ -42,6 +42,8 @@ models:
           type: core.property.field.mixed_type
   core.property.field.boolean_type:
     parent: core.property.field
+  core.property.field.date_type:
+    parent: core.property.field
   core.property.field.datetime_type:
     parent: core.property.field
   core.property.field.file_type:
