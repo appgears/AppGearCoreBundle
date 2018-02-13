@@ -7,6 +7,8 @@ use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use Generator;
 use ReflectionClass;
+use stdClass;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class ModelHelper
 {
@@ -63,6 +65,22 @@ class ModelHelper
     }
 
     /**
+     * Get properties from model and parents
+     *
+     * @param Model $model Model
+     *
+     * @return Property[]|Generator
+     */
+    public static function getProperties(Model $model): Generator
+    {
+        foreach (self::getSelfAndParents($model) as $parent) {
+            foreach ($parent->getProperties() as $property) {
+                yield $property;
+            }
+        }
+    }
+
+    /**
      * Get model property by name
      *
      * @param Model  $model Model
@@ -82,19 +100,26 @@ class ModelHelper
     }
 
     /**
-     * Get properties from model and parents
+     * Get first property with specified extension
      *
-     * @param Model $model Model
+     * @param Model  $model Model
+     * @param string $fqcn  Extension FQCN
      *
-     * @return Property[]|Generator
+     * @return stdClass Result with properties "property" and "extension"
      */
-    public static function getProperties(Model $model): Generator
+    public static function getPropertyWithExtension(Model $model, string $fqcn): ?stdClass
     {
-        foreach (self::getSelfAndParents($model) as $parent) {
-            foreach ($parent->getProperties() as $property) {
-                yield $property;
+        foreach (self::getProperties($model) as $property) {
+            if (null !== $extension = PropertyHelper::getExtension($property, $fqcn)) {
+                $result            = new stdClass();
+                $result->property  = $property;
+                $result->extension = $extension;
+
+                return $result;
             }
         }
+
+        return null;
     }
 
     /**
@@ -133,5 +158,20 @@ class ModelHelper
         }
 
         return null;
+    }
+
+    /**
+     * Read object property value
+     *
+     * @param object   $object   Object
+     * @param Property $property Property
+     *
+     * @return mixed
+     */
+    public static function readPropertyValue($object, Property $property)
+    {
+        $accessor = new PropertyAccessor();
+
+        return $accessor->getValue($object, $property->getName());
     }
 }
