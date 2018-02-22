@@ -6,6 +6,7 @@ use AppGear\CoreBundle\DependencyInjection\TaggedManager;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Helper\ModelHelper;
+use Cosmologist\Gears\StringType;
 use Cosmologist\Gears\StringType\CamelSnakeCase;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -282,7 +283,7 @@ class ModelManager
         $fqcn        = is_object($instance) ? get_class($instance) : $instance;
         $bundle      = $this->findClassBundleAlias($fqcn);
         $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
-        $parts       = explode('\\', trim(substr($fqcn, strlen($bundleClass->getNamespaceName())), '\\'));
+        $parts       = explode('\\', trim(StringType::strAfter($fqcn, $bundleClass->getNamespaceName()), '\\'));
 
         // remove "Entity" namespace part
         array_shift($parts);
@@ -311,7 +312,7 @@ class ModelManager
     {
         foreach ($this->bundles as $alias => $bundleClass) {
             $bundleClassRefl = new \ReflectionClass($bundleClass);
-            if (strpos($fqcn, $bundleClassRefl->getNamespaceName()) === 0) {
+            if (strpos($fqcn, $bundleClassRefl->getNamespaceName()) !== false) {
                 return $alias;
             }
         }
