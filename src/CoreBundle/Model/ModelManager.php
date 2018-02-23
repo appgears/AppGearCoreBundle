@@ -61,7 +61,8 @@ class ModelManager
         TaggedManager $taggedManager,
         ContainerInterface $container,
         array $bundles
-    ) {
+    )
+    {
         $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
@@ -283,7 +284,12 @@ class ModelManager
         $fqcn        = is_object($instance) ? get_class($instance) : $instance;
         $bundle      = $this->findClassBundleAlias($fqcn);
         $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
-        $parts       = explode('\\', trim(StringType::strAfter($fqcn, $bundleClass->getNamespaceName()), '\\'));
+
+        // Ищем оставшуются часть после bundle namespace в fqcn
+        // Ищем не с начала строки, так как $instance может быть проксёй вокрук модели
+        // По факту это может быть причиной коллизий, если fqcn содержит namespace бандла, но не является моделью этого бандла
+        // это крайне маловероятно, поэтому принимаем это допущение в пользу простоты резолвинга
+        $parts = explode('\\', trim(StringType::strAfter($fqcn, $bundleClass->getNamespaceName()), '\\'));
 
         // remove "Entity" namespace part
         array_shift($parts);
@@ -312,6 +318,10 @@ class ModelManager
     {
         foreach ($this->bundles as $alias => $bundleClass) {
             $bundleClassRefl = new \ReflectionClass($bundleClass);
+            // Проверяем что fqcn содержит bundle namespace
+            // Проверяем не с начала строки, так как $instance может быть проксёй вокрук модели
+            // По факту это может быть причиной коллизий, если fqcn содержит namespace бандла, но не является моделью этого бандла
+            // это крайне маловероятно, поэтому принимаем это допущение в пользу простоты резолвинга
             if (strpos($fqcn, $bundleClassRefl->getNamespaceName()) !== false) {
                 return $alias;
             }
