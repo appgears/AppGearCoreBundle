@@ -5,6 +5,7 @@ namespace AppGear\CoreBundle\Helper;
 use AppGear\CoreBundle\Entity\Extension\Model as ExtensionModel;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
+use Cosmologist\Gears\StringType;
 use Generator;
 use ReflectionClass;
 use stdClass;
@@ -81,15 +82,24 @@ class ModelHelper
     }
 
     /**
-     * Get model property by name
+     * Get model property by name or path
      *
-     * @param Model  $model Model
-     * @param string $name  Property name
+     * @param Model $model Model
+     * @param       $name  $path  Property name or path to property (like foo.bar)
      *
      * @return Property|null
      */
     public static function getProperty(Model $model, string $name): ?Property
     {
+        $isPath = StringType::contains($name, '.');
+        if ($isPath) {
+            list($currentName, $leftPath) = explode('.', $name, 2);
+
+            $property = self::getProperty($model, $currentName);
+
+            return self::getProperty($property->getTarget(), $leftPath);
+        }
+
         foreach (self::getProperties($model) as $property) {
             if ($property->getName() === $name) {
                 return $property;
