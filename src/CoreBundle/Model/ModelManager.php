@@ -61,8 +61,7 @@ class ModelManager
         TaggedManager $taggedManager,
         ContainerInterface $container,
         array $bundles
-    )
-    {
+    ) {
         $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
@@ -273,6 +272,35 @@ class ModelManager
     }
 
     /**
+     * Is instance of FQCN model
+     *
+     * @param string|object $instance FQCN or object
+     *
+     * @return string
+     */
+    public function isModel($instance)
+    {
+        if (!is_object($instance) && !is_string($instance)) {
+            throw new RuntimeException('Invalid instance type: ' . gettype($instance));
+        }
+
+        $fqcn   = is_object($instance) ? get_class($instance) : $instance;
+        $bundle = $this->findClassBundleAlias($fqcn);
+
+        if ($bundle === null) {
+            return false;
+        }
+
+        $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
+
+        if (StringType::strAfter($fqcn, $bundleClass->getNamespaceName()) === false) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Return model name by instance
      *
      * @param string|object $instance FQCN or object
@@ -281,8 +309,17 @@ class ModelManager
      */
     public function name($instance)
     {
-        $fqcn        = is_object($instance) ? get_class($instance) : $instance;
-        $bundle      = $this->findClassBundleAlias($fqcn);
+        if (!is_object($instance) && !is_string($instance)) {
+            throw new RuntimeException('Invalid instance type: ' . gettype($instance));
+        }
+
+        $fqcn   = is_object($instance) ? get_class($instance) : $instance;
+        $bundle = $this->findClassBundleAlias($fqcn);
+
+        if ($bundle === null) {
+            throw new RuntimeException('Bundle not found for object: ' . $fqcn);
+        }
+
         $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
 
         // Ищем оставшуются часть после bundle namespace в fqcn
