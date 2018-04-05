@@ -30,4 +30,28 @@ class PropertyHelper
 
         return null;
     }
+
+    /**
+     * Check if property is field
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isField(Property $property)
+    {
+        return $property instanceof Property\Field;
+    }
+
+    /**
+     * Check if property is relationship
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isRelationship(Property $property)
+    {
+        return $property instanceof Property\Relationship;
+    }
 }
