@@ -2,15 +2,12 @@
 
 namespace AppGear\CoreBundle\Model\Generator;
 
-use AppGear\CoreBundle\Entity\Extension\Property\Computed;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
-use AppGear\CoreBundle\EntityService\ModelService;
-use AppGear\CoreBundle\EntityService\PropertyService;
 use AppGear\CoreBundle\Model\ModelManager;
+use Cosmologist\Bundle\SymfonyCommonBundle\DependencyInjection\ContainerStatic;
 use Cosmologist\Gears\FileSystem;
-use PhpParser\Builder;
 use PhpParser\BuilderFactory;
 use PhpParser\Comment;
 use PhpParser\Lexer;
@@ -161,6 +158,16 @@ class SourceGenerator
         if (isset($useNode)) {
             $sourceElements[] = $useNode;
         }
+
+        // Если есть calculated поля - добавляем в use ContainerStatic
+        foreach ($model->getProperties() as $property) {
+            if ($property->getCalculated() !== null) {
+                $sourceElements[] = new Node\Stmt\Use_(array(new UseUse(new Node\Name(ContainerStatic::class))));;
+
+                break;
+            }
+        }
+
         $sourceElements[] = $this->classNode->getNode();
         $sourceCode       = (new Standard)->prettyPrintFile($sourceElements);
 
@@ -217,7 +224,7 @@ class SourceGenerator
         }
 
         // Геттер
-        $this->addGetter($propertyName);
+        $this->addGetter($propertyName, $property->getCalculated());
     }
 
     /**
@@ -264,10 +271,17 @@ class SourceGenerator
      *
      * @param string $propertyName Геттер для свойства
      */
-    private function addGetter($propertyName)
+    private function addGetter($propertyName, $calculated = null)
     {
         $getter = 'get' . ucfirst($propertyName);
-        $code   = '<?php return $this->' . $propertyName . ';';
+
+        if ($calculated === null) {
+            $code = '<?php return $this->' . $propertyName . ';';
+        } else {
+            list($service, $method) = explode('::', $calculated);
+
+            $code    = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
+        }
 
         $this->addMethod($getter, [], $code, 'Get ' . $propertyName);
     }
