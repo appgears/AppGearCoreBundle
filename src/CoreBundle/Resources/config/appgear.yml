@@ -30,10 +30,14 @@ models:
       name:
         field:
           type: core.property.field.string_type
+      calculated:
+        field:
+          type: core.property.field.string_type
       extensions:
         relationship:
           type: core.property.relationship.toMany
           target: core.extension.property
+
   core.property.field:
     parent: core.property
     properties:

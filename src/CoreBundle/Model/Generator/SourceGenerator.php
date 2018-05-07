@@ -211,8 +211,10 @@ class SourceGenerator
         // Добавляем свойство к классу
         $this->classNode->addStmt($node);
 
-        // Создаем сеттер
-        $this->addSetter($propertyName);
+        // Создаем сеттер, ддя калькулируемых полей сеттер не нужен
+        if ($property->getCalculated() === null) {
+            $this->addSetter($propertyName);
+        }
 
         // Геттер
         $this->addGetter($propertyName);

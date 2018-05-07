@@ -61,7 +61,8 @@ class ModelManager
         TaggedManager $taggedManager,
         ContainerInterface $container,
         array $bundles
-    ) {
+    )
+    {
         $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
@@ -183,16 +184,14 @@ class ModelManager
                 }
 
                 $extensions = [];
-                if (array_key_exists('extensions', $propertyDefinition) &&
-                    is_array($propertyDefinition['extensions']) &&
-                    count($propertyDefinition['extensions']) > 0
-                ) {
+                if (array_key_exists('extensions', $propertyDefinition) && is_array($propertyDefinition['extensions'])) {
                     foreach ($propertyDefinition['extensions'] as $extensionDefinition) {
                         $extensions[] = $this->load($extensionDefinition);
                     }
                 }
 
                 $property->setName($propertyName);
+                $property->setCalculated($definition['properties'][$propertyName]['calculated'] ?? null);
                 $property->setExtensions($extensions);
 
                 $properties   = $model->getProperties();
@@ -202,10 +201,7 @@ class ModelManager
         }
 
         $extensions = [];
-        if (array_key_exists('extensions', $definition) &&
-            is_array($definition['extensions']) &&
-            count($definition['extensions']) > 0
-        ) {
+        if (array_key_exists('extensions', $definition) && is_array($definition['extensions'])) {
             foreach ($definition['extensions'] as $extensionDefinition) {
                 $extensions[] = $this->load($extensionDefinition);
             }

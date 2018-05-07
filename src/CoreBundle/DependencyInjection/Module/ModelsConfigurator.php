@@ -71,6 +71,7 @@ class ModelsConfigurator implements ConfiguratorInterface
                                     ->end()
                                 ->end()
                             ->end()
+                            ->scalarNode('calculated')->end()
                         ->end()
                     ->end()
                 ->end()

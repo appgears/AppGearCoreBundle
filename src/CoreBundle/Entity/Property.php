@@ -11,6 +11,11 @@ class Property
     protected $name;
     
     /**
+     * Calculated
+     */
+    protected $calculated;
+    
+    /**
      * Extensions
      */
     protected $extensions = array();
@@ -30,6 +35,23 @@ class Property
     public function getName()
     {
         return $this->name;
+    }
+    
+    /**
+     * Set calculated
+     */
+    public function setCalculated($calculated)
+    {
+        $this->calculated = $calculated;
+        return $this;
+    }
+    
+    /**
+     * Get calculated
+     */
+    public function getCalculated()
+    {
+        return $this->calculated;
     }
     
     /**
