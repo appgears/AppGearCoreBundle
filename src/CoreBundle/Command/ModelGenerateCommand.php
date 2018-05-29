@@ -4,6 +4,7 @@ namespace AppGear\CoreBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -21,7 +22,9 @@ class ModelGenerateCommand extends ContainerAwareCommand
         $this
             ->setName('appgear:core:model:generate')
             ->setDescription('Generate source code for models')
-            ->addArgument('name', InputArgument::OPTIONAL, 'Generate source only for the model');
+            ->addArgument('name', InputArgument::OPTIONAL, 'Generate source only for the model')
+            ->addOption('new', null, InputOption::VALUE_NONE, 'Use new model generator')
+        ;
     }
 
     /**
@@ -30,7 +33,12 @@ class ModelGenerateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $modelManager    = $this->getContainer()->get('app_gear.core.model.manager');
-        $sourceGenerator = $this->getContainer()->get('app_gear.core.model.generator.source');
+
+        if ($input->getOption('new')) {
+            $sourceGenerator = $this->getContainer()->get('app_gear.core.model.generator');
+        } else {
+            $sourceGenerator = $this->getContainer()->get('app_gear.core.model.generator.source');
+        }
 
         if ($name = $input->getArgument('name')) {
             $sourceGenerator->generate($modelManager->get($name));

@@ -15,6 +15,13 @@ services:
           - '@event_dispatcher'
           - '%kernel.bundles%'
 
+    app_gear.core.model.generator:
+        class: AppGear\CoreBundle\Model\ModelGenerator
+        arguments:
+          - '@app_gear.core.model.manager'
+          - '@event_dispatcher'
+          - '%kernel.bundles%'
+
     app_gear.core.tagged_manager:
         class: AppGear\CoreBundle\DependencyInjection\TaggedManager
         arguments:
