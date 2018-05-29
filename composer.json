@@ -4,7 +4,8 @@
     "description": "AppGearCoreBundle",
     "license": "MIT",
     "require": {
-        "nikic/php-parser": "^2.1"
+        "nikic/php-parser": "^2.1",
+        "nette/php-generator": "^3.1"
     },
 
     "autoload": {
