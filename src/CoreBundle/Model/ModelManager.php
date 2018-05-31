@@ -164,13 +164,6 @@ class ModelManager
                         }
                         $property->setComposition($propertyDefinition['composition']);
                         break;
-                    case 'classType':
-                        /** @var Property\ClassType $property */
-                        $property = $this->instance('core.property.classType');
-                        if (array_key_exists('className', $propertyDefinition)) {
-                            $property->setClassName($propertyDefinition['className']);
-                        }
-                        break;
                     case 'collection':
                         /** @var Property\Collection $property */
                         $property = $this->instance('core.property.collection');

@@ -81,13 +81,6 @@ models:
   core.property.relationship.toOne:
     parent: core.property.relationship
 
-  core.property.classType:
-    parent: core.property
-    properties:
-      className:
-        field:
-          type: core.property.field.string_type
-
   core.property.collection:
     parent: core.property
     properties:
