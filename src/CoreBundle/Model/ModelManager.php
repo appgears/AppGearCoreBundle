@@ -61,8 +61,7 @@ class ModelManager
         TaggedManager $taggedManager,
         ContainerInterface $container,
         array $bundles
-    )
-    {
+    ) {
         $this->definitions   = $definitions;
         $this->taggedManager = $taggedManager;
         $this->container     = $container;
@@ -184,6 +183,7 @@ class ModelManager
                 }
 
                 $property->setName($propertyName);
+                $property->setReadOnly($propertyDefinition['readOnly']);
                 $property->setCalculated($definition['properties'][$propertyName]['calculated'] ?? null);
                 $property->setExtensions($extensions);
 

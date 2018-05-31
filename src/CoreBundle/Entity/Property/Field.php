@@ -7,9 +7,22 @@ class Field extends Property
 {
     
     /**
+     * InternalType
+     */
+    protected $internalType;
+    
+    /**
      * DefaultValue
      */
     protected $defaultValue;
+    
+    /**
+     * Get internalType
+     */
+    public function getInternalType()
+    {
+        return $this->internalType;
+    }
     
     /**
      * Set defaultValue

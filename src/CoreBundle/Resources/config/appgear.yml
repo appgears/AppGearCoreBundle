@@ -21,6 +21,7 @@ models:
       abstract:
         field:
           type: core.property.field.boolean_type
+          defaultValue: false
       toString:
         field:
           type: core.property.field.string_type
@@ -45,29 +46,82 @@ models:
   core.property.field:
     parent: core.property
     properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          readOnly: true
       defaultValue:
         field:
           type: core.property.field.mixed_type
+
   core.property.field.boolean_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: boolean
+          readOnly: true
   core.property.field.date_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: '\DateTime'
+          readOnly: true
   core.property.field.datetime_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: '\DateTime'
+          readOnly: true
   core.property.field.file_type:
     parent: core.property.field
   core.property.field.float_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: float
+          readOnly: true
   core.property.field.integer_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: integer
+          readOnly: true
   core.property.field.markdown_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: string
+          readOnly: true
   core.property.field.mixed_type:
     parent: core.property.field
   core.property.field.string_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: string
+          readOnly: true
   core.property.field.text_type:
     parent: core.property.field
+    properties:
+      internalType:
+        field:
+          type: core.property.field.string_type
+          defaultValue: string
+          readOnly: true
 
   core.property.relationship:
     parent: core.property

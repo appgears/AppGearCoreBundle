@@ -218,8 +218,11 @@ class SourceGenerator
         // Добавляем свойство к классу
         $this->classNode->addStmt($node);
 
-        // Создаем сеттер, ддя калькулируемых полей сеттер не нужен
-        if ($property->getCalculated() === null) {
+        $readOnly   = $property->getReadOnly() === true;
+        $calculated = $property->getCalculated() !== null;
+
+        // Не создаем сеттер для readOnly и калькулируемых полей
+        if (!$readOnly && !$calculated) {
             $this->addSetter($propertyName);
         }
 
@@ -280,7 +283,7 @@ class SourceGenerator
         } else {
             list($service, $method) = explode('::', $calculated);
 
-            $code    = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
+            $code = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
         }
 
         $this->addMethod($getter, [], $code, 'Get ' . $propertyName);
