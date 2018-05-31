@@ -30,6 +30,10 @@ models:
       name:
         field:
           type: core.property.field.string_type
+      readOnly:
+        field:
+          type: core.property.field.boolean_type
+          defaultValue: false
       calculated:
         field:
           type: core.property.field.string_type

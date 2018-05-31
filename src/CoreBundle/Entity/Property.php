@@ -11,6 +11,11 @@ class Property
     protected $name;
     
     /**
+     * ReadOnly
+     */
+    protected $readOnly = false;
+    
+    /**
      * Calculated
      */
     protected $calculated;
@@ -35,6 +40,23 @@ class Property
     public function getName()
     {
         return $this->name;
+    }
+    
+    /**
+     * Set readOnly
+     */
+    public function setReadOnly($readOnly)
+    {
+        $this->readOnly = $readOnly;
+        return $this;
+    }
+    
+    /**
+     * Get readOnly
+     */
+    public function getReadOnly()
+    {
+        return $this->readOnly;
     }
     
     /**
