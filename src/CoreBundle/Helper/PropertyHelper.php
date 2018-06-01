@@ -54,4 +54,16 @@ class PropertyHelper
     {
         return $property instanceof Property\Relationship;
     }
+
+    /**
+     * Check if internal type of field is scalar
+     *
+     * @param Property\Field $field Field
+     *
+     * @return bool
+     */
+    public static function isScalar(Property\Field $field)
+    {
+        return in_array($field->getInternalType(), ['boolean', 'integer', 'string', 'float']);
+    }
 }

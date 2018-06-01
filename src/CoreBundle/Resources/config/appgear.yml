@@ -21,7 +21,6 @@ models:
       abstract:
         field:
           type: core.property.field.boolean_type
-          defaultValue: false
       toString:
         field:
           type: core.property.field.string_type

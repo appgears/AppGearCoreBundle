@@ -5,9 +5,11 @@ namespace AppGear\CoreBundle\Model\Generator;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Entity\Property\Relationship\ToMany;
+use AppGear\CoreBundle\Helper\PropertyHelper;
 use AppGear\CoreBundle\Model\ModelManager;
 use Cosmologist\Bundle\SymfonyCommonBundle\DependencyInjection\ContainerStatic;
 use Cosmologist\Gears\FileSystem;
+use Cosmologist\Gears\StringType;
 use PhpParser\BuilderFactory;
 use PhpParser\Comment;
 use PhpParser\Lexer;
@@ -143,6 +145,9 @@ class SourceGenerator
             $this->classNode->makeAbstract();
         }
 
+        // Конструктор
+        $this->buildConstructor($model);
+
         // Собираем свойства модели
         $this->buildProperties($model);
 
@@ -178,6 +183,51 @@ class SourceGenerator
     }
 
     /**
+     * Собираем конструктор
+     *
+     * @param Model $model Модель
+     */
+    private function buildConstructor($model)
+    {
+        // Инициализация value-object fields
+        $valueObjectProperties = [];
+
+        /** @var Property $property */
+        foreach ($model->getProperties() as $property) {
+            if (!PropertyHelper::isField($property)) {
+                continue;
+            }
+
+            /** @var Property\Field $property */
+            if (PropertyHelper::isScalar($property)) {
+                continue;
+            }
+            if ($property->getDefaultValue() === null) {
+                continue;
+            }
+
+            $valueObjectProperties[] = $property;
+        }
+
+        if (count($valueObjectProperties) > 0) {
+
+            $lines = [];
+            foreach ($valueObjectProperties as $property) {
+                $argument = $property->getDefaultValue();
+                if (is_string($argument)) {
+                    $argument = StringType::wrap($argument, "'");
+                }
+                if (is_null($argument)) {
+                    $argument = '';
+                }
+                $lines[] = '<?php $this->' . $property->getName() . ' = new ' . $property->getInternalType() . '(' . $argument . ');';
+            }
+
+            $this->addMethod('__construct', [], implode(PHP_EOL, $lines), 'Constructor');
+        }
+    }
+
+    /**
      * Подключаем свойства к классу
      *
      * @param Model $model Модель
@@ -203,7 +253,7 @@ class SourceGenerator
 
         // Значение по-умолчанию
         if ($property instanceof Property\Field) {
-            if (null !== $value = $property->getDefaultValue()) {
+            if (PropertyHelper::isField($property) && PropertyHelper::isScalar($property) && (null !== $value = $property->getDefaultValue())) {
                 $builder->setDefault($value);
             }
         } elseif ($property instanceof ToMany) {

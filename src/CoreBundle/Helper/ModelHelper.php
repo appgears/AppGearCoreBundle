@@ -148,7 +148,7 @@ class ModelHelper
             return $property;
         }
 
-        return null;
+        throw new \RuntimeException("Model '$model' does not contain relationship '$name'");
     }
 
     /**
