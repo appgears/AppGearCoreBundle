@@ -261,7 +261,7 @@ class ModelManager
     }
 
     /**
-     * Is instance of FQCN model
+     * Is model
      *
      * @param string|object $instance FQCN or object
      *
