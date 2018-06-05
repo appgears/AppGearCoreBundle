@@ -269,24 +269,7 @@ class ModelManager
      */
     public function isModel($instance)
     {
-        if (!is_object($instance) && !is_string($instance)) {
-            throw new RuntimeException('Invalid instance type: ' . gettype($instance));
-        }
-
-        $fqcn   = is_object($instance) ? get_class($instance) : $instance;
-        $bundle = $this->findClassBundleAlias($fqcn);
-
-        if ($bundle === null) {
-            return false;
-        }
-
-        $bundleClass = (new \ReflectionClass($this->bundles[$bundle]));
-
-        if (StringType::strAfter($fqcn, $bundleClass->getNamespaceName()) === false) {
-            return false;
-        }
-
-        return true;
+        return array_key_exists($this->name($instance), $this->models);
     }
 
     /**
