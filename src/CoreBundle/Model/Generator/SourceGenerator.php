@@ -19,6 +19,7 @@ use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 
 class SourceGenerator
 {
@@ -166,7 +167,7 @@ class SourceGenerator
 
         // Если есть calculated поля - добавляем в use ContainerStatic
         foreach ($model->getProperties() as $property) {
-            if ($property->getCalculated() !== null) {
+            if (PropertyHelper::isCalculatedWithService($property)) {
                 $sourceElements[] = new Node\Stmt\Use_(array(new UseUse(new Node\Name(ContainerStatic::class))));;
 
                 break;
@@ -277,7 +278,7 @@ class SourceGenerator
         }
 
         // Геттер
-        $this->addGetter($propertyName, $property->getCalculated());
+        $this->addGetter($property);
     }
 
     /**
@@ -322,21 +323,25 @@ class SourceGenerator
     /**
      * Добавляет геттер к классу для свойства
      *
-     * @param string $propertyName Геттер для свойства
+     * @param Property $property
      */
-    private function addGetter($propertyName, $calculated = null)
+    private function addGetter(Property $property)
     {
-        $getter = 'get' . ucfirst($propertyName);
+        $getter = 'get' . ucfirst($property->getName());
 
-        if ($calculated === null) {
-            $code = '<?php return $this->' . $propertyName . ';';
+        if (PropertyHelper::isCalculated($property)) {
+            if (PropertyHelper::isCalculatedWithService($property)) {
+                list($service, $method) = explode('::', $property->getCalculated());
+                $code = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
+            } else {
+                $el = new ExpressionLanguage();
+                $code = '<?php return ' . $el->compile($property->getCalculated(), ['this']) . ';';
+            }
         } else {
-            list($service, $method) = explode('::', $calculated);
-
-            $code = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
+            $code = '<?php return $this->' . $property->getName() . ';';
         }
 
-        $this->addMethod($getter, [], $code, 'Get ' . $propertyName);
+        $this->addMethod($getter, [], $code, 'Get ' . $property->getName());
     }
 
     /**

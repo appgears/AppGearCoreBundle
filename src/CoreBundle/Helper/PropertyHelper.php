@@ -2,11 +2,8 @@
 
 namespace AppGear\CoreBundle\Helper;
 
-use AppGear\CoreBundle\Entity\Extension\Model as ExtensionModel;
-use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
-use Generator;
-use ReflectionClass;
+use Cosmologist\Gears\StringType;
 
 class PropertyHelper
 {
@@ -65,5 +62,41 @@ class PropertyHelper
     public static function isScalar(Property\Field $field)
     {
         return in_array($field->getInternalType(), ['boolean', 'integer', 'string', 'float']);
+    }
+
+    /**
+     * Check if property is calculated
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isCalculated(Property $property)
+    {
+        return $property->getCalculated() !== null;
+    }
+
+    /**
+     * Check if property is calculated with service
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isCalculatedWithService(Property $property)
+    {
+        return StringType::contains($property->getCalculated(), '::');
+    }
+
+    /**
+     * Check if property is calculated with expression
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isCalculatedWithExpression(Property $property)
+    {
+        return !self::isCalculatedWithService($property);
     }
 }
