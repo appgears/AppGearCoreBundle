@@ -8,6 +8,7 @@ use AppGear\CoreBundle\Entity\Property;
 use AppGear\CoreBundle\Helper\ModelHelper;
 use Cosmologist\Gears\StringType;
 use Cosmologist\Gears\StringType\CamelSnakeCase;
+use Exception;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -269,7 +270,13 @@ class ModelManager
      */
     public function isModel($instance)
     {
-        return array_key_exists($this->name($instance), $this->models);
+        try {
+            $name = $this->name($instance);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return array_key_exists($name, $this->models);
     }
 
     /**
