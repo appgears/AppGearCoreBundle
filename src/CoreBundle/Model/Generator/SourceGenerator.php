@@ -152,12 +152,12 @@ class SourceGenerator
         // Собираем свойства модели
         $this->buildProperties($model);
 
+        // Кидаем событие
+        $event = new GenerateModelEvent($model, $this->classNode, $this);
+        $this->eventDispatcher->dispatch('appgear.core.model.generator.generate.model', $event);
+
         // Собираем __toString
         $this->buildToString($model);
-
-        // Кидаем событие
-        $event = new GeneratorEvent($model, $this->classNode);
-        $this->eventDispatcher->dispatch('appgear.core.model.generator.generate.after', $event);
 
         // Генерируем исходный код
         $sourceElements = array($namespaceNode);
@@ -249,8 +249,31 @@ class SourceGenerator
     {
         $propertyName = $property->getName();
 
+        $calculated = PropertyHelper::isCalculated($property);
+
         // Создаем свойство
-        $builder = $this->factory->property($propertyName)->makeProtected();
+        if (!$calculated) {
+            $this->addField($property);
+        }
+
+        $readOnly = $property->getReadOnly() === true;
+
+        // Не создаем сеттер для readOnly и калькулируемых полей
+        if (!$readOnly && !$calculated) {
+            $this->addSetter($propertyName);
+        }
+
+        // Геттер
+        $this->addGetter($property);
+
+        // Кидаем событие
+        $event = new GeneratePropertyEvent($property, $this);
+        $this->eventDispatcher->dispatch('appgear.core.model.generator.generate.property', $event);
+    }
+
+    public function addField(Property $property)
+    {
+        $builder = $this->factory->property($property->getName())->makeProtected();
 
         // Значение по-умолчанию
         if ($property instanceof Property\Field) {
@@ -264,21 +287,10 @@ class SourceGenerator
         $node = $builder->getNode();
 
         // Комментарий к свойству
-        $this->addDocComment($node, ucfirst($propertyName), 1);
+        $this->addDocComment($node, ucfirst($property->getName()), 1);
 
         // Добавляем свойство к классу
         $this->classNode->addStmt($node);
-
-        $readOnly   = $property->getReadOnly() === true;
-        $calculated = $property->getCalculated() !== null;
-
-        // Не создаем сеттер для readOnly и калькулируемых полей
-        if (!$readOnly && !$calculated) {
-            $this->addSetter($propertyName);
-        }
-
-        // Геттер
-        $this->addGetter($property);
     }
 
     /**
@@ -288,7 +300,7 @@ class SourceGenerator
      * @param array|string $comment                 Комментарий в виде строки или набора строк
      * @param int          $verticalOffsetLineCount Количество пустых строк перед комментарием
      */
-    private function addDocComment($node, $comment, $verticalOffsetLineCount = 0)
+    public function addDocComment($node, $comment, $verticalOffsetLineCount = 0)
     {
         // Если комментарий передан в виде одной строки - разбиваем на несколько строк
         if (is_string($comment)) {
@@ -334,7 +346,7 @@ class SourceGenerator
                 list($service, $method) = explode('::', $property->getCalculated());
                 $code = '<?php return ContainerStatic::get(\'' . $service . '\')->' . $method . '($this);';
             } else {
-                $el = new ExpressionLanguage();
+                $el   = new ExpressionLanguage();
                 $code = '<?php return ' . $el->compile($property->getCalculated(), ['this']) . ';';
             }
         } else {
@@ -352,7 +364,7 @@ class SourceGenerator
      * @param string $code       Код метода
      * @param string $comment    Комментарий к методу
      */
-    private function addMethod($name, $parameters, $code, $comment)
+    public function addMethod($name, $parameters, $code, $comment)
     {
         $node = $this->factory->method($name)->makePublic();
         foreach ($parameters as $parameter) {
