@@ -50,7 +50,7 @@ class Collection
             $transformFn = function ($item) use ($transformCallback, $transformArgs) {
                 return call_user_func($transformCallback, $item, ...$transformArgs);
             };
-            $data = array_map($transformFn, $data);
+            $data        = array_map($transformFn, $data);
         }
 
         $filterFn = function ($item) use ($filterCallback, $filterArgs) {
@@ -58,22 +58,48 @@ class Collection
             return !call_user_func($filterCallback, $item, ...$filterArgs);
         };
 
-        return new Collection(array_filter($data, $filterFn));
+        return new self(array_filter($data, $filterFn));
     }
 
     /**
-     * @param callable|null $transformCallback
-     * @param array         $transformArgs
+     * Transforms each item and returns result collection
+     *
+     * @param callable $callback
+     * @param array    $args
      *
      * @return Collection
      */
-    public function transform(callable $transformCallback = null, array $transformArgs = []): Collection
+    public function transform(callable $callback, array $args = []): Collection
     {
-        $transformFn = function ($item) use ($transformCallback, $transformArgs) {
-            return call_user_func($transformCallback, $item, ...$transformArgs);
+        $transformFn = function ($item) use ($callback, $args) {
+            return call_user_func($callback, $item, ...$args);
         };
 
-        return new Collection(array_map($transformFn, $this->data));
+        return new self(array_map($transformFn, $this->data));
+    }
+
+    /**
+     * Apply aggregation callback and returns aggregation result
+     *
+     * @param callable $callback
+     *
+     * @return mixed
+     */
+    public function aggregate(callable $callback)
+    {
+        return call_user_func_array($callback, [$this->toArray()]);
+    }
+
+    /**
+     * Useful transform - collects the items by path from collection
+     *
+     * @param string $path
+     *
+     * @return Collection
+     */
+    public function collect($path)
+    {
+        return new self(ArrayType::collect($this->toArray(), $path));
     }
 
     /**
