@@ -3,6 +3,7 @@
 namespace AppGear\CoreBundle\Collection;
 
 use Cosmologist\Gears\ArrayType;
+use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Traversable;
 
 class Collection
@@ -91,6 +92,37 @@ class Collection
     }
 
     /**
+     * Useful filter - filter collection items by expression
+     *
+     * @param string $expression The expression (Symfony expression language)
+     *                           If the expression returns true, the current value from array is returned into
+     *                           the result array. Array keys are preserved.
+     *                           Use "item" alias in the expression for access to iterated array item.
+     * @return Collection
+     */
+    public function filterExpression(string $expression)
+    {
+        return new self(ArrayType::filter($this->toArray(), $expression));
+    }
+
+    /**
+     * @param string $expression
+     *
+     * @return Collection
+     */
+    public function transformExpression(string $expression)
+    {
+        $el          = new ExpressionLanguage();
+        $parsedNodes = $el->parse($expression, ['item'])->getNodes();
+
+        $callback = function ($item) use ($parsedNodes) {
+            return $parsedNodes->evaluate([], ['item' => $item]);
+        };
+
+        return $this->transform($callback);
+    }
+
+    /**
      * Useful transform - collects the items by path from collection
      *
      * @param string $path
@@ -108,5 +140,21 @@ class Collection
     public function toArray()
     {
         return $this->data;
+    }
+
+    /**
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->data);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return $this->count() === 0;
     }
 }
