@@ -2,6 +2,7 @@
 
 namespace AppGear\CoreBundle\Model;
 
+use AppGear\AppBundle\Storage\Repository;
 use AppGear\CoreBundle\DependencyInjection\TaggedManager;
 use AppGear\CoreBundle\Entity\Model;
 use AppGear\CoreBundle\Entity\Property;
@@ -20,7 +21,6 @@ class ModelManager
      * @var array
      */
     private $definitions = [];
-
     /**
      * Models
      *
@@ -41,6 +41,13 @@ class ModelManager
      * @var ContainerInterface
      */
     private $container;
+
+    /**
+     * Storage repository
+     *
+     * @var Repository
+     */
+    private $modelRepository;
 
     /**
      * Registered bundles
@@ -70,6 +77,18 @@ class ModelManager
     }
 
     /**
+     * Gets model repository
+     */
+    private function getModelRepository()
+    {
+        if ($this->modelRepository === null) {
+            $this->modelRepository = $this->container->get('appgear.storage')->getRepository('core.model');
+        }
+
+        return $this->modelRepository;
+    }
+
+    /**
      * Return model by name
      *
      * @param string $name The model name
@@ -78,6 +97,9 @@ class ModelManager
      */
     public function get($name)
     {
+        // todo
+        //$this->getModelRepository()->find($name);
+
         if (!array_key_exists($name, $this->models)) {
             $this->initialize($name);
         }
@@ -177,7 +199,8 @@ class ModelManager
                 }
 
                 $extensions = [];
-                if (array_key_exists('extensions', $propertyDefinition) && is_array($propertyDefinition['extensions'])) {
+                if (array_key_exists('extensions',
+                        $propertyDefinition) && is_array($propertyDefinition['extensions'])) {
                     foreach ($propertyDefinition['extensions'] as $extensionDefinition) {
                         $extensions[] = $this->load($extensionDefinition);
                     }
