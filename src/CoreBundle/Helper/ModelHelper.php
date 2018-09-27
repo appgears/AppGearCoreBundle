@@ -9,7 +9,6 @@ use Cosmologist\Gears\StringType;
 use Generator;
 use ReflectionClass;
 use stdClass;
-use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 class ModelHelper
 {
@@ -171,7 +170,7 @@ class ModelHelper
     }
 
     /**
-     * Read object property value
+     * Reads object property value
      *
      * @param object   $object   Object
      * @param Property $property Property
@@ -180,8 +179,24 @@ class ModelHelper
      */
     public static function readPropertyValue($object, Property $property)
     {
-        $accessor = new PropertyAccessor();
+        $method = 'get' . ucfirst($property->getName());
 
-        return $accessor->getValue($object, $property->getName());
+        return $object->$method();
+    }
+
+    /**
+     * Sets object property value
+     *
+     * @param object   $object   Object
+     * @param Property $property Property
+     * @param mixed    $value    Value
+     *
+     * @return mixed
+     */
+    public static function setPropertyValue($object, Property $property, $value)
+    {
+        $method = 'set' . ucfirst($property->getName());
+
+        return $object->$method($value);
     }
 }

@@ -53,15 +53,39 @@ class PropertyHelper
     }
 
     /**
-     * Check if internal type of field is scalar
+     * Check if property is relationship and relationship type is toOne
      *
-     * @param Property\Field $field Field
+     * @param Property $property Property
      *
      * @return bool
      */
-    public static function isScalar(Property\Field $field)
+    public static function isRelationshipToOne(Property $property)
     {
-        return in_array($field->getInternalType(), ['boolean', 'integer', 'string', 'float']);
+        return $property instanceof Property\Relationship\ToOne;
+    }
+
+    /**
+     * Check if property is relationship and relationship type is toMany
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isRelationshipToMany(Property $property)
+    {
+        return $property instanceof Property\Relationship\ToMany;
+    }
+
+    /**
+     * Check if internal type of field is scalar
+     *
+     * @param Property $property Property
+     *
+     * @return bool
+     */
+    public static function isScalar(Property $property)
+    {
+        return self::isField($property) && in_array($property->getInternalType(), ['boolean', 'integer', 'string', 'float']);
     }
 
     /**
