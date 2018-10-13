@@ -8,6 +8,7 @@ use AppGear\CoreBundle\Entity\Property;
 use Cosmologist\Gears\StringType;
 use Generator;
 use ReflectionClass;
+use RuntimeException;
 use stdClass;
 
 class ModelHelper
@@ -23,10 +24,31 @@ class ModelHelper
     public static function getFqcn($model, array $bundles)
     {
         $parts       = explode('.', $model);
-        $bundle      = array_shift($parts);
-        $bundleClass = $bundles[$bundle];
-        $reflection  = new ReflectionClass($bundleClass);
-        $parts       = array_map(['\\Cosmologist\\Gears\\StringType\\CamelSnakeCase', 'snakeToCamel'], $parts);
+        $bundle      = '';
+        $bundleClass = null;
+
+        // lookup suitable bundle
+        while (count($parts) > 1) {
+            $part = array_shift($parts);
+
+            if (strlen($bundle) !== 0) {
+                $bundle .= '.';
+            }
+            $bundle .= $part;
+
+            if (array_key_exists($bundle, $bundles)) {
+                $bundleClass = $bundles[$bundle];
+                break;
+            }
+        }
+
+        if ($bundleClass === null) {
+            throw new RuntimeException("Can not find bundle for model: $model");
+        }
+
+        $reflection = new ReflectionClass($bundleClass);
+
+        $parts = array_map([StringType\CamelSnakeCase::class, 'snakeToCamel'], $parts);
 
         $fqcn = $reflection->getNamespaceName() . '\\Entity';
         if (count($parts)) {
@@ -147,7 +169,7 @@ class ModelHelper
             return $property;
         }
 
-        throw new \RuntimeException("Model '$model' does not contain relationship '$name'");
+        throw new RuntimeException("Model '$model' does not contain relationship '$name'");
     }
 
     /**
