@@ -63,6 +63,20 @@ class Collection
     }
 
     /**
+     * Useful filter - filter collection items by expression
+     *
+     * @param string $expression The expression (Symfony expression language)
+     *                           If the expression returns true, the current value from array is returned into
+     *                           the result array. Array keys are preserved.
+     *                           Use "item" alias in the expression for access to iterated array item.
+     * @return Collection
+     */
+    public function filterExpression(string $expression)
+    {
+        return new self(ArrayType::filter($this->toArray(), $expression));
+    }
+
+    /**
      * Transforms each item and returns result collection
      *
      * @param callable $callback
@@ -77,32 +91,6 @@ class Collection
         };
 
         return new self(array_map($transformFn, $this->data));
-    }
-
-    /**
-     * Apply aggregation callback and returns aggregation result
-     *
-     * @param callable $callback
-     *
-     * @return mixed
-     */
-    public function aggregate(callable $callback)
-    {
-        return call_user_func_array($callback, [$this->toArray()]);
-    }
-
-    /**
-     * Useful filter - filter collection items by expression
-     *
-     * @param string $expression The expression (Symfony expression language)
-     *                           If the expression returns true, the current value from array is returned into
-     *                           the result array. Array keys are preserved.
-     *                           Use "item" alias in the expression for access to iterated array item.
-     * @return Collection
-     */
-    public function filterExpression(string $expression)
-    {
-        return new self(ArrayType::filter($this->toArray(), $expression));
     }
 
     /**
@@ -123,9 +111,32 @@ class Collection
     }
 
     /**
-     * Useful transform - collects the items by path from collection
      *
-     * @param string $path
+     * @param string $fqcn
+     *
+     * @return Collection
+     */
+    public function transformMap(string $fqcn)
+    {
+        return $this->transform([ArrayType::class, 'map'], [$fqcn]);
+    }
+
+    /**
+     * Apply aggregation callback and returns aggregation result
+     *
+     * @param callable $callback
+     *
+     * @return mixed
+     */
+    public function aggregate(callable $callback)
+    {
+        return call_user_func_array($callback, [$this->toArray()]);
+    }
+
+    /**
+     * Collects the items by path from collection
+     *
+     * @param string|string[] $path
      *
      * @return Collection
      */
