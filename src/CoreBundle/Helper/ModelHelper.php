@@ -28,7 +28,7 @@ class ModelHelper
         $bundleClass = null;
 
         // lookup suitable bundle
-        while (count($parts) > 1) {
+        while (count($parts) > 0) {
             $part = array_shift($parts);
 
             if (strlen($bundle) !== 0) {
