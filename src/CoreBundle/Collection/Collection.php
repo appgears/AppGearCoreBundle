@@ -134,13 +134,25 @@ class Collection
     }
 
     /**
-     * Collects the items by path from collection
+     * @deprecated Use self::select instead
      *
      * @param string|string[] $path
      *
      * @return Collection
      */
     public function collect($path)
+    {
+        return new self(ArrayType::collect($this->toArray(), $path));
+    }
+
+    /**
+     * Collects the items by path from collection
+     *
+     * @param string|string[] $path
+     *
+     * @return Collection
+     */
+    public function select($path)
     {
         return new self(ArrayType::collect($this->toArray(), $path));
     }
